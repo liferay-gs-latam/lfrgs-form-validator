@@ -132,6 +132,11 @@ export default class FormValidatorField {
                 isSelect = true;
             }
 
+            let isFile = false;
+            if($field.tagName.toLowerCase() === "file") {
+                isFile = true;
+            }
+
             let isTypeHidden = false;
             if($field.hasAttribute("type") && $field.getAttribute("type") === "hidden") {
                 isTypeHidden = true;
@@ -142,12 +147,12 @@ export default class FormValidatorField {
                 this.status = undefined;
                 this._status = undefined;
 
-                if(this.getOptionFromFieldOrRoot("resetFieldValidationOnChange") || (isSelect && this.getOptionFromFieldOrRoot("validateFieldOnBlur"))) {
+                if(this.getOptionFromFieldOrRoot("resetFieldValidationOnChange") || ((isSelect || isFile) && this.getOptionFromFieldOrRoot("validateFieldOnBlur"))) {
                     this.setUnvalidated();
                 }
             
                 // Validate selects because they're change should also be understood as a blur
-                if(isSelect && this.getOptionFromFieldOrRoot("validateFieldOnBlur")) {
+                if((isSelect && isFile) && this.getOptionFromFieldOrRoot("validateFieldOnBlur")) {
                     let validate = () => {
                         this._validate().then((message) => {
                         }).catch((message) => {
@@ -194,10 +199,8 @@ export default class FormValidatorField {
             }
 
             $field.addEventListener('input', handleFieldInput);        
-            $field.addEventListener('change', handleFieldValidationOnChange)
-            $field.addEventListener('blur', handleFieldValidationOnBlur)
-
-
+            $field.addEventListener('change', handleFieldValidationOnChange);
+            $field.addEventListener('blur', handleFieldValidationOnBlur);
             unregisterFns.push(() => {
                 $field.removeEventListener('input', handleFieldInput);
                 $field.removeEventListener('change', handleFieldValidationOnChange);
@@ -291,7 +294,7 @@ export default class FormValidatorField {
                             $field.checked = true
                         } else {
                             $field.checked = false
-                        }
+                        } 
                     } else {
                         if(!value) {
                             value = ""
@@ -302,7 +305,7 @@ export default class FormValidatorField {
             }
 
             this._validator.updateDependencyRules();
-
+            
         }
                 
     }
