@@ -151,8 +151,8 @@ export default class FormValidatorField {
                     this.setUnvalidated();
                 }
             
-                // Validate selects because they're change should also be understood as a blur
-                if((isSelect && isFile) && this.getOptionFromFieldOrRoot("validateFieldOnBlur")) {
+                // Validate selects because their change should also be understood as a blur
+                if((isSelect || isFile) && this.getOptionFromFieldOrRoot("validateFieldOnBlur")) {
                     let validate = () => {
                         this._validate().then((message) => {
                         }).catch((message) => {
