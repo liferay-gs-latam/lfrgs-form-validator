@@ -245,7 +245,9 @@ export default class FormValidatorField {
                         }
                     })
                 }
-                return value
+
+                return (value.length === 1)?value[0]:value
+
             } else {
                 if(this.elements[0].getAttribute("type") === "radio" || this.elements[0].getAttribute("type") === "checkbox") {
                     return (this.elements[0].checked)?this.elements[0].value:''
