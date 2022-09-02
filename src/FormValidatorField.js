@@ -245,8 +245,12 @@ export default class FormValidatorField {
                         }
                     })
                 }
-
-                return (value.length === 1)?value[0]:value
+                
+                if(value.length === 0) {
+                    return ''
+                } else {
+                    return (value.length === 1)?value[0]:value
+                }
 
             } else {
                 if(this.elements[0].getAttribute("type") === "radio" || this.elements[0].getAttribute("type") === "checkbox") {
