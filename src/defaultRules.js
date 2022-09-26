@@ -11,6 +11,8 @@ import cpf from './defaultRules/cpf';
 import cep from './defaultRules/cep';
 import date from './defaultRules/date';
 import phone from './defaultRules/phone';
+import age from './defaultRules/age';
+
 
 export default {
   required,
@@ -24,5 +26,6 @@ export default {
   cep,
   date,
   phone,
-  length
+  length,
+  age
 }
