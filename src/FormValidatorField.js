@@ -268,6 +268,9 @@ export default class FormValidatorField {
 
         if(this.setValueFn && typeof this.setValueFn === 'function') {
             this.setValueFn(this);
+            if(this.mask) {
+                this.setMask(this.mask)
+            }
             this._validator.updateDependencyRules();
 
         } else {
@@ -364,12 +367,13 @@ export default class FormValidatorField {
 
     setMask(pattern) {
         this.unsetMask()
-        VMasker(this.elements).maskPattern(pattern);
+        this.VMaskerInstance = VMasker(this.elements).maskPattern(pattern);
     }
 
     unsetMask() {
-        if(VMasker(this.elements)) {
-            VMasker(this.elements).unMask(); 
+        if(this.VMaskerInstance) {
+            this.VMaskerInstance.unMask(); 
+            this.VMaskerInstance = undefined;
         }
     }
 
