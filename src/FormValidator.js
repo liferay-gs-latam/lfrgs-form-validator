@@ -545,7 +545,7 @@ export default class FormValidator {
                             }
                         })
                         
-                        targetFields.forEach(enabletargetField => {
+                        targetFields.forEach(targetField => {
                             let renderPrefs = targetField.getFieldRenderPreferences();
                             targetField.disable()
 
