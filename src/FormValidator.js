@@ -132,7 +132,7 @@ export default class FormValidator {
         if(this.enableDataRestore) {
             this.applyFormState();
             this.updateFormState();
-            this.validate(function() {
+            this.validate(function(cb) {
                 this.updateDependencyRules()
             })
         } else { 
@@ -535,59 +535,67 @@ export default class FormValidator {
                     let targetFields = this.getDependencyRuleTargetFields(depRuleObject)
 
                     let hide = () => {
-                        depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
-                            if($groupWrapper) {
-                                if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.add(this.groupWrapperHiddenClass);
-                                    $groupWrapper.classList.remove(this.groupWrapperVisibleClass);
+
+                            depRuleObject.groups.forEach(groupName => {
+                                let $groupWrapper = this.getGroupWrapper(groupName);
+                                if($groupWrapper) {
+                                    if(depRuleObject.behavior === "hide") {
+                                        $groupWrapper.classList.add(this.groupWrapperHiddenClass);
+                                        $groupWrapper.classList.remove(this.groupWrapperVisibleClass);
+                                    }
                                 }
-                            }
-                        })
-                        
-                        targetFields.forEach(targetField => {
-                            let renderPrefs = targetField.getFieldRenderPreferences();
-                            targetField.disable()
-
-                            if(depRuleObject.behavior === "hide") {
-                                targetField.$wrapper.classList.add(renderPrefs.wrapperHiddenClass);
-                                targetField.$wrapper.classList.remove(renderPrefs.wrapperVisibleClass);
-                            }
+                            })
                             
-                            targetField.setValid()
-                            targetField.disableRules()
+                            targetFields.forEach(targetField => {
+                                let renderPrefs = targetField.getFieldRenderPreferences();
+                                    
+                                if(depRuleObject.behavior === "hide") {
+                                    targetField.$wrapper.classList.add(renderPrefs.wrapperHiddenClass);
+                                    targetField.$wrapper.classList.remove(renderPrefs.wrapperVisibleClass);
+                                }
 
-                        })
+                                if(depRuleObject.behavior === "disable") {
+                                    targetField.disable()
+                                }
+                            
+                                // targetField.setValid()
+                                targetField.disableRules()
+
+                            })
+
 
                     }
-
                     let show = () => {
-                        depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
-                            if($groupWrapper) {
-                                if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.remove(this.groupWrapperHiddenClass)
-                                    $groupWrapper.classList.add(this.groupWrapperVisibleClass)
+                        
+                            depRuleObject.groups.forEach(groupName => {
+                                let $groupWrapper = this.getGroupWrapper(groupName);
+                                if($groupWrapper) {
+                                    if(depRuleObject.behavior === "hide") {
+                                        $groupWrapper.classList.remove(this.groupWrapperHiddenClass)
+                                        $groupWrapper.classList.add(this.groupWrapperVisibleClass)
+                                    }
                                 }
-                            }
-                        })
+                            })
+    
+                            targetFields.forEach(targetField => {
+                                let renderPrefs = targetField.getFieldRenderPreferences();
 
-                        targetFields.forEach(targetField => {
-                            let renderPrefs = targetField.getFieldRenderPreferences();
+                                if(depRuleObject.behavior === "hide") {
+                                    targetField.$wrapper.classList.remove(renderPrefs.wrapperHiddenClass)
+                                    targetField.$wrapper.classList.add(renderPrefs.wrapperVisibleClass)
+                                } 
+                    
+                                if(depRuleObject.behavior === "disable") {
+                                    targetField.enable()
+                                }
 
-                            targetField.enable()
-                            if(depRuleObject.behavior === "hide") {
-                                targetField.$wrapper.classList.remove(renderPrefs.wrapperHiddenClass)
-                                targetField.$wrapper.classList.add(renderPrefs.wrapperVisibleClass)
-                            } 
-
-                            targetField.enableRules()
-                            targetField.setUnvalidated() // recomment
-                            targetField.validate()
-                            
-                        })
+                                // targetField.setUnvalidated()
+                                targetField.enableRules()
+                                
+                            })
                         
                     }
+
                     
                     if(depRuleObject.name) {
                         if(depRuleObject.name === "isValid") {
@@ -607,7 +615,9 @@ export default class FormValidator {
                         }
                     }
                     
-                    var rule = new FormValidatorRule(depRuleObject);
+
+                    var rule = new FormValidatorRule(depRuleObject)
+
                     rule.test(field.getValue()).then(() => {
                         this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(targetFields));
                         show()
