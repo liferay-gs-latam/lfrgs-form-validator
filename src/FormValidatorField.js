@@ -267,7 +267,7 @@ export default class FormValidatorField {
     setValue(value) {
 
         if(this.setValueFn && typeof this.setValueFn === 'function') {
-            this.setValueFn(this);
+            this.setValueFn(this, value);
             this._validator.updateDependencyRules();
 
         } else {
