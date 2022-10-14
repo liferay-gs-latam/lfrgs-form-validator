@@ -373,9 +373,6 @@ export default class FormValidatorField {
                 delimiter: '.',
                 zeroCents: true
             });
-        } else if(pattern === "money") {
-            
-            
         } else {
             VMasker(this.elements).maskPattern(pattern);
         }
