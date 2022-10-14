@@ -53,6 +53,8 @@ export default class FormValidatorField {
         this.focusFn = fieldObject.focusFn;
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
+        this.resetFn = fieldObject.resetFn;
+
         
         this.register();
         
@@ -364,7 +366,20 @@ export default class FormValidatorField {
 
     setMask(pattern) {
         this.unsetMask()
-        VMasker(this.elements).maskPattern(pattern);
+        if(pattern === "money") {
+            VMasker(this.elements).maskMoney({
+                precision: 2,
+                separator: ',',
+                delimiter: '.',
+                unit: 'R$',
+                suffixUnit: 'R$',
+                zeroCents: true
+            });
+        } else {
+            VMasker(this.elements).maskPattern(pattern);
+        }
+
+
     }
 
     unsetMask() {
