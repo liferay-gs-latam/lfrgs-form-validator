@@ -371,10 +371,11 @@ export default class FormValidatorField {
                 precision: 2,
                 separator: ',',
                 delimiter: '.',
-                unit: 'R$',
-                suffixUnit: 'R$',
                 zeroCents: true
             });
+        } else if(pattern === "money") {
+            
+            
         } else {
             VMasker(this.elements).maskPattern(pattern);
         }
