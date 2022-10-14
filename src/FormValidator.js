@@ -381,6 +381,12 @@ export default class FormValidator {
                 }
             })
         }
+
+        this.eachField((field) => {
+            if(field.formResetFn) {
+                field.formResetFn(field)
+            }
+        }) 
         
         this._logger.log("resetForm(): Form has been reset");
         this.events.onReset && (this.events.onReset(this));

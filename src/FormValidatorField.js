@@ -53,7 +53,7 @@ export default class FormValidatorField {
         this.focusFn = fieldObject.focusFn;
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
-        this.resetFn = fieldObject.resetFn;
+        this.formResetFn = fieldObject.formResetFn;
 
         
         this.register();
