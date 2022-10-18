@@ -276,7 +276,7 @@ export default class FormValidatorField {
 
             if(typeof value === "object") {
                 this.elements.forEach(($field, i) => {
-                    if($field.hasAttribute('readonly') || $field.hasAttribute('disabled')) {
+                    if(!this.interactive) {
                         return;
                     }
                     if($field.getAttribute("type") === "radio" || $field.getAttribute("type") === "checkbox") {
@@ -294,7 +294,7 @@ export default class FormValidatorField {
                 })
             } else {
                 this.elements.forEach(($field, i) => {
-                    if($field.hasAttribute('readonly') || $field.hasAttribute('disabled')) {
+                    if(!this.interactive) {
                         return;
                     }
                     if($field.getAttribute("type") === "radio" || $field.getAttribute("type") === "checkbox") {
