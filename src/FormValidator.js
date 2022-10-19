@@ -545,6 +545,7 @@ export default class FormValidator {
                             return;
                         }
                         field._hasUnfulfilledDependency = true;
+                        field.setUnvalidated()
                         depRuleObject.groups.forEach(groupName => {
                             let $groupWrapper = this.getGroupWrapper(groupName);
                             if($groupWrapper) {
@@ -567,7 +568,6 @@ export default class FormValidator {
                                 targetField.disable()
                             }
                         
-                            // targetField.setValid()
                             targetField.disableRules()
 
                         })
@@ -601,9 +601,9 @@ export default class FormValidator {
                                 targetField.enable()
                             }
 
-                            // targetField.setUnvalidated()
                             targetField.enableRules()
-                            
+                            field.setUnvalidated()
+
                         })
                         
                     }
