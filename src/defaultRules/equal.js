@@ -19,7 +19,7 @@ export default {
             })
             
         } else {
-            if(!value.includes(parameter)) {
+            if(value !== parameter) {
                 isEqual = false;
             }
         }
