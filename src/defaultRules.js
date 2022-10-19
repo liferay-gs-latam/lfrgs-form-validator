@@ -12,6 +12,7 @@ import cep from './defaultRules/cep';
 import date from './defaultRules/date';
 import phone from './defaultRules/phone';
 import age from './defaultRules/age';
+import fullName from './defaultRules/fullName';
 
 
 export default {
@@ -27,5 +28,6 @@ export default {
   date,
   phone,
   length,
-  age
+  age,
+  fullName
 }
