@@ -230,7 +230,9 @@ class FormValidatorStepsHandler {
 
         if(firstInvalidStepIndex !== -1) {
             this.setStep(firstInvalidStepIndex);
-            this.steps[firstInvalidStepIndex].formValidatorInstance.validate()
+            this.steps[firstInvalidStepIndex].formValidatorInstance.validate().then(() => {
+                this.submit();
+            }).catch(() => {})
         } else {
             
             let _this = this;
