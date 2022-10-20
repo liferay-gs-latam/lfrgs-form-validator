@@ -187,6 +187,7 @@ export default class FormValidatorField {
 
             var timeoutChange;
             let handleFieldValidationOnChange = () => {
+                
                 if((this.getOptionFromFieldOrRoot("validateFieldOnChange") || (isRadioOrCheckbox && this.getOptionFromFieldOrRoot("validateFieldOnBlur"))) && this.interactive) {
                     let validate = () => {
                         this._validate().then((message) => {
@@ -198,6 +199,9 @@ export default class FormValidatorField {
                     clearTimeout(timeoutChange);
                     timeoutChange = setTimeout(validate, 1)
                 }
+
+                (events && events.onFieldChange) && (events.onFieldChange(this));
+
             }
 
             $field.addEventListener('input', handleFieldInput);        
