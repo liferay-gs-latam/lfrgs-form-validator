@@ -395,6 +395,7 @@ export default class FormValidatorField {
     }
 
     disable() {
+        this.setUnvalidated()
         this.disableInteraction()
         this.elements.forEach($field => {
             $field.setAttribute("disabled","disabled");
@@ -410,6 +411,7 @@ export default class FormValidatorField {
         this.elements.forEach($field => {
             $field.removeAttribute("disabled");
         })
+        this.setUnvalidated();
         if(this.enableFn) {
             this.enableFn(this)
         }
