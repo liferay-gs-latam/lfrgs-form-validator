@@ -187,6 +187,7 @@ export default class FormValidatorField {
 
             var timeoutChange;
             let handleFieldValidationOnChange = () => {
+                
                 if((this.getOptionFromFieldOrRoot("validateFieldOnChange") || (isRadioOrCheckbox && this.getOptionFromFieldOrRoot("validateFieldOnBlur"))) && this.interactive) {
                     let validate = () => {
                         this._validate().then((message) => {
@@ -198,6 +199,9 @@ export default class FormValidatorField {
                     clearTimeout(timeoutChange);
                     timeoutChange = setTimeout(validate, 1)
                 }
+
+                (events && events.onFieldChange) && (events.onFieldChange(this));
+
             }
 
             $field.addEventListener('input', handleFieldInput);        
@@ -391,6 +395,7 @@ export default class FormValidatorField {
     }
 
     disable() {
+        this.setUnvalidated()
         this.disableInteraction()
         this.elements.forEach($field => {
             $field.setAttribute("disabled","disabled");
@@ -406,6 +411,7 @@ export default class FormValidatorField {
         this.elements.forEach($field => {
             $field.removeAttribute("disabled");
         })
+        this.setUnvalidated();
         if(this.enableFn) {
             this.enableFn(this)
         }
