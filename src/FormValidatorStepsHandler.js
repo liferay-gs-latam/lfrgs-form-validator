@@ -4,7 +4,7 @@ class FormValidatorStepsHandler {
 
         this.steps = options.steps;
         this.currentStepIndex = undefined;
-        this._disabledStepChange = false;
+        this.disabledStepChange = false;
         this.onUpdate = options.onUpdate;
         this.onInit = options.onInit;
         this.enableStrictStepsOrder = options.enableStrictStepsOrder;
@@ -127,22 +127,20 @@ class FormValidatorStepsHandler {
     }
 
     disableStepChange() {
-        this._disabledStepChange = true;
+        this.disabledStepChange = true;
     }
     enableStepChange() {
-        this._disabledStepChange = false;
+        this.disabledStepChange = false;
     }
 
     setStep(stepIndex, focusStepFirstNotValidField=true) {    
         
-        if(this._disabledStepChange || stepIndex < 0 || stepIndex >= this.steps.length || !this.steps[stepIndex]) {
+        if(this.disabledStepChange || stepIndex < 0 || stepIndex >= this.steps.length || !this.steps[stepIndex]) {
             return;
         }
-        
         let _this = this;
         let _setStep = () => {
-            for(let i = 0; i < this.steps.length; i++) {
-                let step = this.steps[i];
+            for(const step of this.steps) {
                 step.formValidatorInstance.$form.classList.remove(this.currentStepClass);
                 step.formValidatorInstance.$form.classList.add(this.hiddenStepClass);
             }
@@ -158,7 +156,7 @@ class FormValidatorStepsHandler {
             }
             
             if(this.onSetStep) {
-                this.onSetStep(_this)
+                return this.onSetStep(_this)
             }
             return
         }
@@ -227,7 +225,6 @@ class FormValidatorStepsHandler {
         if(this.isSubmitting) {
             return;
         }
-
         
         let firstInvalidStepIndex = -1;
         for(let i = 0; i < this.steps.length; i++) {
@@ -247,8 +244,8 @@ class FormValidatorStepsHandler {
             
             let _this = this;
             let submitCallback = (result) => {
+
                 _this.isSubmitting = false;
-                this.enableStepChange()
                 if(result) {
                     _this.onSubmit(_this);
                     // _this.reset();
@@ -263,7 +260,6 @@ class FormValidatorStepsHandler {
             //     return step.formValidatorInstance.$form
             // });
 
-            this.disableStepChange()
             (this.submitFn) && this.submitFn(this, submitCallback);
 
         }
