@@ -405,7 +405,6 @@ export default class FormValidatorField {
         }
     }
 
-
     enable() {
         this.enableInteraction()
         this.elements.forEach($field => {
@@ -416,7 +415,6 @@ export default class FormValidatorField {
             this.enableFn(this)
         }
     }
-
 
     // Enable/disable field interaction
     disableInteraction() {
