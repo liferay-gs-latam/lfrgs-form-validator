@@ -534,7 +534,11 @@ export default class FormValidatorField {
                 let messageHTML = fieldRenderPreferences[statusName+"MessageHTML"].replace("{{message}}", message);
                 let $message = parseHTML(messageHTML);
                 
+                
                 if(fieldRenderPreferences.messageWrapperNode) {
+                    if(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]) {
+                        $message.classList.add(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]);
+                    }   
                     fieldRenderPreferences.messageWrapperNode.appendChild($message);
                 } else {
                     this.$wrapper.appendChild($message);
