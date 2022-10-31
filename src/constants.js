@@ -25,7 +25,9 @@ const DEFAULT_OPTIONS = {
         wrapperHiddenClass: "d-none",
         wrapperVisibleClass: "d-block",
         wrapperDisabledClass: "disabled",
-        
+
+        messageWrapperNode: undefined, //Render message somewhere else
+
         disabledClass: "disabled",
         
         // "Unvalidated" field state 
@@ -36,6 +38,7 @@ const DEFAULT_OPTIONS = {
         unvalidatedClass: "is-unvalidated",
         addWrapperUnvalidatedClass: true,
         wrapperUnvalidatedClass: "is-unvalidated",
+        messageUnvalidatedClass: "is-unvalidated",
 
         // "Validating" field state
         showValidatingMessage: true,
@@ -45,7 +48,8 @@ const DEFAULT_OPTIONS = {
         validatingClass: "is-validating",
         addWrapperValidatingClass: true,
         wrapperValidatingClass: "is-validating",
-        
+        messageValidatingClass: "is-validating",
+
         // "Invalid" field state (message will come from first unmatched rule)
         showInvalidMessage: true,
         invalidMessageHTML: "<div class=\"invalid-feedback text-danger d-block\">{{message}}</div>",
@@ -53,6 +57,7 @@ const DEFAULT_OPTIONS = {
         invalidClass: "is-invalid",
         addWrapperInvalidClass: true,
         wrapperInvalidClass: "is-invalid",
+        messageInvalidClass: "is-invalid",
         
         // "Valid" field state
         showValidMessage: true,
