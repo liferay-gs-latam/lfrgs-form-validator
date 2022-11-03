@@ -523,9 +523,35 @@ export default class FormValidator {
         //     var field = this.fields[k];
         this.eachField((field) => {
             
-            if(field.dependencyRules !== undefined) {
+            if(!field.dependencyRules || !field.dependencyRules.length) {
+                return;
+            }
 
+
+            let handleValidationPromise = async (resolveValidationPromise, rejectValidationPromise) => {
+        
+                var value = field.getValue()
+                var rules = [];
+                
                 field.dependencyRules.forEach(depRuleObject => {
+
+                    if(depRuleObject.name) {
+                        if(depRuleObject.name === "isValid") {
+                            let _field = field;
+                            depRuleObject.fn = () => {
+                                return _field.isValid()
+                            }
+                        } else if(depRuleObject.name === "isInvalid") {
+                            let _field = field;
+                            depRuleObject.fn = () => {
+                                return !_field.isValid()
+                            }
+                        } else {
+                            if(DEFAULT_RULES[depRuleObject.name]) {
+                                depRuleObject = {...DEFAULT_RULES[depRuleObject.name], ...removeUndefinedObjectKeys(depRuleObject)}
+                            }
+                        }
+                    }
 
                     if(!depRuleObject.fields){
                         depRuleObject.fields = [];
@@ -537,17 +563,30 @@ export default class FormValidator {
                     if(!depRuleObject.behavior || !depRuleObject.behavior.length) {
                         depRuleObject.behavior = "hide"
                     }
+    
+                    let ruleAndDepRule = [new FormValidatorRule(depRuleObject), depRuleObject];
+                    rules.push(ruleAndDepRule)
 
-                    let targetFields = this.getDependencyRuleTargetFields(depRuleObject)
+                })
+                
+                function runRuleTest(rule, value) {
+                    return rule.test(value);
+                } 
+    
+                for (const rule of rules) {
 
-                    let hide = () => {
+                    let formValidatorRule = rule[0];
+                    let depRuleObject = rule[1];
+                    let targetFields = this.getDependencyRuleTargetFields(depRuleObject);
+
+                    let unfulfill = () => {
 
                         depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
+                            let $groupWrapper = field.getGroupWrapper(groupName);
                             if($groupWrapper) {
                                 if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.add(this.groupWrapperHiddenClass);
-                                    $groupWrapper.classList.remove(this.groupWrapperVisibleClass);
+                                    $groupWrapper.classList.add(field.groupWrapperHiddenClass);
+                                    $groupWrapper.classList.remove(field.groupWrapperVisibleClass);
                                 }
                             }
                         })
@@ -570,14 +609,14 @@ export default class FormValidator {
 
 
                     }
-                    let show = () => {
+                    let fulfill = () => {
                         
                         depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
+                            let $groupWrapper = field.getGroupWrapper(groupName);
                             if($groupWrapper) {
                                 if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.remove(this.groupWrapperHiddenClass)
-                                    $groupWrapper.classList.add(this.groupWrapperVisibleClass)
+                                    $groupWrapper.classList.remove(field.groupWrapperHiddenClass)
+                                    $groupWrapper.classList.add(field.groupWrapperVisibleClass)
                                 }
                             }
                         })
@@ -599,41 +638,43 @@ export default class FormValidator {
                         })
                         
                     }
-
+    
+                    await runRuleTest(formValidatorRule, value).then(() => {
+                        this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(rule.targetFields));
+                        fulfill()
+                        this.events.onShowDependentFields && (this.events.onShowDependentFields(rule.targetFields));
                     
-                    if(depRuleObject.name) {
-                        if(depRuleObject.name === "isValid") {
-                            let _field = field;
-                            depRuleObject.fn = (value) => {
-                                return _field.isValid()
-                            }
-                        } else if(depRuleObject.name === "isInvalid") {
-                            let _field = field;
-                            depRuleObject.fn = (value) => {
-                                return !_field.isValid()
-                            }
-                        } else {
-                            if(DEFAULT_RULES[depRuleObject.name]) {
-                                depRuleObject = {...DEFAULT_RULES[depRuleObject.name], ...removeUndefinedObjectKeys(depRuleObject)}
-                            }
-                        }
-                    }
-                    
-
-                    var rule = new FormValidatorRule(depRuleObject)
-
-                    rule.test(field.getValue()).then(() => {
-                        this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(targetFields));
-                        show()
-                        this.events.onShowDependentFields && (this.events.onShowDependentFields(targetFields));
-                    }).catch(() => {
-                        this.events.onBeforeHideDependentFields && (this.events.onBeforeHideDependentFields(targetFields));
-                        hide()
-                        this.events.onHideDependentFields && (this.events.onHideDependentFields(targetFields));
+                    }).catch((message) => {
+                        this.events.onBeforeHideDependentFields && (this.events.onBeforeHideDependentFields(rule.targetFields));
+                        unfulfill()
+                        this.events.onHideDependentFields && (this.events.onHideDependentFields(rule.targetFields));
                     })
+    
+                }
 
-                })
+                resolveValidationPromise()
+    
             }
+    
+            let dependencyRulesValidationPromise = new Promise(handleValidationPromise);
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
         });
 
         (this._onUpdate) && this._onUpdate();
