@@ -687,11 +687,7 @@ export default class FormValidatorField {
                     this._logger.log("validate(): Field \"#"+this.name+"\" is not valid", this);
                     this.setInvalid(message, silentMode);
                     rejectValidationPromise();
-                    
-                    (events && events.onValidateField) && (events.onValidateField(this));
-                    this._validator.updateDependencyRules()
-                    this._validator.updateFormState()
-
+                         
                 });
 
             }
@@ -701,11 +697,13 @@ export default class FormValidatorField {
                 this.setValid(validMessage, silentMode);
                 resolveValidationPromise();
                 
-                (events && events.onValidateField) && (events.onValidateField(this));
-                this._validator.updateDependencyRules()
-                this._validator.updateFormState()
-
             }
+
+            this._validator.updateDependencyRules();
+            this._validator.updateFormState();
+            
+            (events && events.onValidateField) && (events.onValidateField(this));
+
 
             this.$wrapper.dispatchEvent(new CustomEvent('formValidatorFieldValidate', {detail: {formValidatorField: this}}))
             
