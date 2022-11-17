@@ -376,7 +376,7 @@ export default class FormValidatorField {
                 precision: 2,
                 separator: ',',
                 delimiter: '.',
-                zeroCents: true
+                zeroCents: false
             });
         } else {
             VMasker(this.elements).maskPattern(pattern);
