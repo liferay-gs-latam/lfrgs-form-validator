@@ -9,6 +9,7 @@ class FormValidatorStepsHandler {
         this.onInit = options.onInit;
         this.enableStrictStepsOrder = options.enableStrictStepsOrder;
         this.submitFn = options.submitFn;
+        this.onTrySubmit = options.onTrySubmit;
         this.onSubmit = options.onSubmit
         this.onSubmitFail = options.onSubmitFail;
         this.isSubmitting = false;
@@ -40,7 +41,7 @@ class FormValidatorStepsHandler {
                 let _this = this;
                 step.formValidatorInstance.submitFn = ((validator, cb) => {
                     _this.submit();
-                    cb(false)
+                    cb(true)
                 })
             }
 
@@ -139,7 +140,9 @@ class FormValidatorStepsHandler {
             return;
         }
         let _this = this;
+        var lastStep = this.currentStepIndex;
         let _setStep = () => {
+            lastStep = this.currentStepIndex;
             for(const step of this.steps) {
                 step.formValidatorInstance.$form.classList.remove(this.currentStepClass);
                 step.formValidatorInstance.$form.classList.add(this.hiddenStepClass);
@@ -156,7 +159,7 @@ class FormValidatorStepsHandler {
             }
             
             if(this.onSetStep) {
-                return this.onSetStep(_this)
+                return this.onSetStep(_this, lastStep)
             }
             return
         }
@@ -219,8 +222,21 @@ class FormValidatorStepsHandler {
         this.setStep(0, false);
     }
 
+    getFormDatas() {
+        return this.steps.map(step => {
+            return step.formValidatorInstance.getFormData()
+        })
+    }
+
+    getSerializedFormDatas(concat=false) {
+        return this.steps.map(step => {
+            return step.formValidatorInstance.getSerializedFormData()
+        })
+    }
 
     submit() {
+
+        (this.onTrySubmit) && this.onTrySubmit(this);
 
         if(this.isSubmitting) {
             return;
