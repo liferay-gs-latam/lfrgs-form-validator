@@ -8,6 +8,14 @@ import { deepSpread } from 'deep-spread';
 var DEFAULT_RULES = defaultRules;
 var DEFAULT_OPTIONS = constants.DEFAULT_OPTIONS;
 
+const removeUndefinedObjectKeys = (obj) => {
+    Object.keys(obj).forEach(key => {
+        if (obj[key] === undefined) {
+            delete obj[key];
+        }
+    });
+    return obj
+};
 export default class FormValidator {
 
     static setDefaultOptions(options) {
