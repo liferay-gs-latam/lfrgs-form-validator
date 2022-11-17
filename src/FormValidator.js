@@ -8,16 +8,6 @@ import { deepSpread } from 'deep-spread';
 var DEFAULT_RULES = defaultRules;
 var DEFAULT_OPTIONS = constants.DEFAULT_OPTIONS;
 
-
-const removeUndefinedObjectKeys = (obj) => {
-    Object.keys(obj).forEach(key => {
-        if (obj[key] === undefined) {
-            delete obj[key];
-        }
-    });
-    return obj
-};
-
 export default class FormValidator {
 
     static setDefaultOptions(options) {
@@ -25,45 +15,38 @@ export default class FormValidator {
     }
 
     static setDefaultRules(rules) {
-
         rules.forEach(rule => {
-
-            if(rule.name) {
-                if(DEFAULT_RULES[rule.name]) {
-                    rule = deepSpread(rule, DEFAULT_RULES[rule.name])   
-                }
-                DEFAULT_RULES[rule.name] = rule;
+            if(!rule.name) {
+                return false;
             }
-        
+            if(DEFAULT_RULES[rule.name]) {
+                rule = deepSpread(rule, DEFAULT_RULES[rule.name])   
+            }
+            DEFAULT_RULES[rule.name] = rule;
         })
 
     }
     
     constructor(formId, options={}, commonOptions={}) {
-            
         this._logger = new Logger(options.debug);
-
         this._logger.log("constructor(): New validator instance");
-        this.formId = formId;
-
+        
         let _options = deepSpread(commonOptions, DEFAULT_OPTIONS);
         this.options = deepSpread(options, _options);
-        
+        this.formId = formId;
+
         if(!document.getElementById(formId)) {
             this._logger.logError("constructor(): Couldn't find form element \"#"+formId+"\"");
-            return;
+            
+            return false;
+
         } else {
             this._logger.log("constructor(): Validator will be initialized to \"#"+formId+"\"");
 
-                // Register instance
-            if(!window.formValidator_instances) {
-                window.formValidator_instances = {}
-            }
-            if(window.formValidator_instances[this.formId]) {
-                window.formValidator_instances[this.formId].destroy();
-            }
-
+            !window.formValidator_instances && (window.formValidator_instances = {})
+            window.formValidator_instances[this.formId] && window.formValidator_instances[this.formId].destroy();
             window.formValidator_instances[this.formId] = this;
+            
             return this.init();
             
         }
@@ -98,37 +81,31 @@ export default class FormValidator {
         this._repeatables = {};
         this.defaultRules = DEFAULT_RULES;
         
-        if(!this.$form) {
-            this._logger.logError("init(): Couldn't find a form with id '"+this.formId+"'"); 
-            return false;
-        }
-
+        // Register Fields
         this._logger.log("init(): Registering fields..."); 
-
         this.options.fields.forEach(fieldObject => {
             this.registerField(fieldObject);
         }) 
 
-        var handleFormSubmit = (e) => {
-            e.preventDefault();
-            this.submit(e)
-        }
-        this.$form.addEventListener('submit', handleFormSubmit)
-
-        var handleFormChange = (e) => {
-            if(this.enableDataRestore) {
-                this.updateFormState();
+        // Form event handlers
+        let formNativeEventsHandlers = {
+            submit: (e) => {
+                e.preventDefault();
+                this.submit(e)
+            },
+            change: (e) => {
+                if(this.enableDataRestore) {
+                    this.updateFormState();
+                }
+                this.updateDependencyRules(true);
             }
-            this.updateDependencyRules(true);
         }
-        this.$form.addEventListener('change', handleFormChange)
 
-        
-        this._options = this.options;
-        delete this.options
-        delete this.formId
-        
-        
+        Object.keys(formNativeEventsHandlers).map(key => {
+            this.$form.addEventListener(key, formNativeEventsHandlers[key])
+        })
+
+
         if(this.enableDataRestore) {
             this.applyFormState();
             this.updateFormState();
@@ -139,10 +116,15 @@ export default class FormValidator {
             this.resetForm();
         }
 
+        delete this.options
+        delete this.formId
         
+        this.initialized = true;
+
+        this._logger.log("init(): Validator has been initialized", this);
+
         this.events.onInit && (this.events.onInit(this));
 
-        this._logger.log("init(): Validator has been initialized", this);   
 
 
         this.destroy = () => {
@@ -152,18 +134,18 @@ export default class FormValidator {
             this.eachField((field) => {
                 field.unregister()
             })            
-            this.$form.removeEventListener('submit', handleFormSubmit)
-            this.$form.removeEventListener('change', handleFormChange)
+
+            Object.keys(formNativeEventsHandlers).map(key => {
+                this.$form.removeEventListener(key, formNativeEventsHandlers[key])
+            })
 
             this.initialized = false;
         }
 
-        this.initialized = true;
 
     }
     
     registerField(fieldObject) {
-
         if(this.fields[fieldObject.name]) {
             this.unregisterField(fieldObject.name)
         }
@@ -189,14 +171,15 @@ export default class FormValidator {
             let obj = fieldObject;
             _registerField(obj);
         }
+
     }
 
     unregisterField(fieldName) {
         this.fields[fieldName].unregister()
+
     }
 
     eachField(fn) {
-
         Object.keys(this.fields).forEach(k => {
             return fn(this.fields[k])
         })
@@ -235,9 +218,8 @@ export default class FormValidator {
             return true
         })
         return firstInvalidField
+
     }
-
-
 
     getFirstNotValidField(fieldsNames = []) {
         let firstNotValidField = undefined;
@@ -300,7 +282,6 @@ export default class FormValidator {
 
     validate(fieldsNames=[], cb=()=>{}) {
         let v = () => {
-            // this.resetValidation(fieldsNames)
             this._validate(fieldsNames).then((x) => {cb(true)}).catch((x) => {cb(false)})
         }
         setTimeout(v,1);
@@ -325,14 +306,13 @@ export default class FormValidator {
                     fieldsValidationPromises.push(this.fields[fieldName]._validate(silentMode))
                 })
             }
-            
-
 
             Promise.all(fieldsValidationPromises).then(() => {
                 resolveValidationPromise()
             }).catch(() => {
                 rejectValidationPromise()
             }).finally(() => {
+                this.lastValidationSerializedFormData = this.getSerializedFormData()
                 this.events.onValidate && (this.events.onValidate(this));
             })
         }
@@ -519,13 +499,41 @@ export default class FormValidator {
 
         this._logger.log("updateDependencyRules(): Updating...", this);   
 
-        // Object.keys(this.fields).forEach(k => {
-        //     var field = this.fields[k];
         this.eachField((field) => {
             
-            if(field.dependencyRules !== undefined) {
+            if(!field.dependencyRules || !field.dependencyRules.length) {
+                return;
+            }
 
+            let handleValidationPromise = async (resolveValidationPromise, rejectValidationPromise) => {
+        
+                var value = field.getValue()
+                var rules = [];
+                
                 field.dependencyRules.forEach(depRuleObject => {
+
+                    if(depRuleObject.name) {
+                        if(depRuleObject.name === "isValid") {
+                            let _field = field;
+                            depRuleObject.fn = () => {
+                                return _field.isValid()
+                            }
+                        } else if(depRuleObject.name === "isInvalid") {
+                            let _field = field;
+                            depRuleObject.fn = () => {
+                                return !_field.isValid()
+                            }
+                        } else {
+                            if(DEFAULT_RULES[depRuleObject.name]) {
+                                Object.keys(depRuleObject).forEach(key => {
+                                    if (depRuleObject[key] === undefined) {
+                                        delete depRuleObject[key];
+                                    }
+                                })
+                                depRuleObject = {...DEFAULT_RULES[depRuleObject.name], ...removeUndefinedObjectKeys(depRuleObject)}
+                            }
+                        }
+                    }
 
                     if(!depRuleObject.fields){
                         depRuleObject.fields = [];
@@ -537,21 +545,30 @@ export default class FormValidator {
                     if(!depRuleObject.behavior || !depRuleObject.behavior.length) {
                         depRuleObject.behavior = "hide"
                     }
+    
+                    let ruleAndDepRule = [new FormValidatorRule(depRuleObject), depRuleObject];
+                    rules.push(ruleAndDepRule)
 
-                    let targetFields = this.getDependencyRuleTargetFields(depRuleObject)
+                })
+                
+                function runRuleTest(rule, value) {
+                    return rule.test(value);
+                } 
+    
+                for (const rule of rules) {
 
-                    let hide = () => {
-                        if(field._hasUnfulfilledDependency) {
-                            return;
-                        }
-                        field._hasUnfulfilledDependency = true;
-                        field.setUnvalidated()
+                    let formValidatorRule = rule[0];
+                    let depRuleObject = rule[1];
+                    let targetFields = this.getDependencyRuleTargetFields(depRuleObject);
+
+                    let unfulfill = () => {
+
                         depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
+                            let $groupWrapper = field.getGroupWrapper(groupName);
                             if($groupWrapper) {
                                 if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.add(this.groupWrapperHiddenClass);
-                                    $groupWrapper.classList.remove(this.groupWrapperVisibleClass);
+                                    $groupWrapper.classList.add(field.groupWrapperHiddenClass);
+                                    $groupWrapper.classList.remove(field.groupWrapperVisibleClass);
                                 }
                             }
                         })
@@ -574,17 +591,14 @@ export default class FormValidator {
 
 
                     }
-                    let show = () => {
-                        if(!field._hasUnfulfilledDependency) {
-                            return;
-                        }
-                        field._hasUnfulfilledDependency = false;
+                    let fulfill = () => {
+                        
                         depRuleObject.groups.forEach(groupName => {
-                            let $groupWrapper = this.getGroupWrapper(groupName);
+                            let $groupWrapper = field.getGroupWrapper(groupName);
                             if($groupWrapper) {
                                 if(depRuleObject.behavior === "hide") {
-                                    $groupWrapper.classList.remove(this.groupWrapperHiddenClass)
-                                    $groupWrapper.classList.add(this.groupWrapperVisibleClass)
+                                    $groupWrapper.classList.remove(field.groupWrapperHiddenClass)
+                                    $groupWrapper.classList.add(field.groupWrapperVisibleClass)
                                 }
                             }
                         })
@@ -602,46 +616,30 @@ export default class FormValidator {
                             }
 
                             targetField.enableRules()
-                            field.setUnvalidated()
 
                         })
                         
                     }
-
+    
+                    await runRuleTest(formValidatorRule, value).then(() => {
+                        this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(rule.targetFields));
+                        fulfill()
+                        this.events.onShowDependentFields && (this.events.onShowDependentFields(rule.targetFields));
                     
-                    if(depRuleObject.name) {
-                        if(depRuleObject.name === "isValid") {
-                            let _field = field;
-                            depRuleObject.fn = (value) => {
-                                return _field.isValid()
-                            }
-                        } else if(depRuleObject.name === "isInvalid") {
-                            let _field = field;
-                            depRuleObject.fn = (value) => {
-                                return !_field.isValid()
-                            }
-                        } else {
-                            if(DEFAULT_RULES[depRuleObject.name]) {
-                                depRuleObject = {...DEFAULT_RULES[depRuleObject.name], ...removeUndefinedObjectKeys(depRuleObject)}
-                            }
-                        }
-                    }
-                    
-
-                    var rule = new FormValidatorRule(depRuleObject)
-
-                    rule.test(field.getValue()).then(() => {
-                        this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(targetFields));
-                        show()
-                        this.events.onShowDependentFields && (this.events.onShowDependentFields(targetFields));
-                    }).catch(() => {
-                        this.events.onBeforeHideDependentFields && (this.events.onBeforeHideDependentFields(targetFields));
-                        hide()
-                        this.events.onHideDependentFields && (this.events.onHideDependentFields(targetFields));
+                    }).catch((message) => {
+                        this.events.onBeforeHideDependentFields && (this.events.onBeforeHideDependentFields(rule.targetFields));
+                        unfulfill()
+                        this.events.onHideDependentFields && (this.events.onHideDependentFields(rule.targetFields));
                     })
+    
+                }
 
-                })
+                resolveValidationPromise()
+    
             }
+    
+            let dependencyRulesValidationPromise = new Promise(handleValidationPromise);
+    
         });
 
         (this._onUpdate) && this._onUpdate();
@@ -668,7 +666,7 @@ export default class FormValidator {
     getSerializedFormData() {
         let obj = {};
         for (let [key, value] of this.getFormData()) {
-            if (obj[key] !== undefined) {
+            if (obj[key]) {
                 if (!Array.isArray(obj[key])) {
                     obj[key] = [obj[key]];
                 }
@@ -679,6 +677,13 @@ export default class FormValidator {
         }
         return obj;
 
+    }
+
+    hasChangedSinceLastValidation() {
+        if(this.lastValidationSerializedFormData) {
+            return (JSON.stringify(this.lastValidationSerializedFormData) !== JSON.stringify(this.getSerializedFormData()))
+        }
+        return true
     }
 
     submit(e) {
@@ -736,10 +741,6 @@ export default class FormValidator {
                 }
             }).catch(() => {
                 this.submitting = false;
-                // let firstNotValidField = this.getFirstNotValidField();
-                // if(firstNotValidField) {
-                //     firstNotValidField.focus();
-                // }
             })
         
 

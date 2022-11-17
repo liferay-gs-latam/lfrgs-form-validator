@@ -54,6 +54,7 @@ export default class FormValidatorField {
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
         this.formResetFn = fieldObject.formResetFn;
+        this._isDisabled = false;
 
         
         this.register();
@@ -394,8 +395,14 @@ export default class FormValidatorField {
         e.preventDefault();
     }
 
-    disable() {
-        this.setUnvalidated()
+    disable(unvalidate=true) {
+        if(this._isDisabled) { 
+            return;
+        }
+        this._isDisabled = true;
+        if(unvalidate) {
+            this.setUnvalidated()
+        }
         this.disableInteraction()
         this.elements.forEach($field => {
             $field.setAttribute("disabled","disabled");
@@ -405,12 +412,18 @@ export default class FormValidatorField {
         }
     }
 
-    enable() {
+    enable(unvalidate=true) {
+        if(!this._isDisabled) { 
+            return;
+        }
         this.enableInteraction()
         this.elements.forEach($field => {
             $field.removeAttribute("disabled");
         })
-        this.setUnvalidated();
+        if(unvalidate) {
+            this.setUnvalidated()
+        }
+        this._isDisabled = false;
         if(this.enableFn) {
             this.enableFn(this)
         }
@@ -534,11 +547,11 @@ export default class FormValidatorField {
                 let messageHTML = fieldRenderPreferences[statusName+"MessageHTML"].replace("{{message}}", message);
                 let $message = parseHTML(messageHTML);
                 
+                if(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]) {
+                    $message.classList.add(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]);
+                }   
                 
                 if(fieldRenderPreferences.messageWrapperNode) {
-                    if(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]) {
-                        $message.classList.add(fieldRenderPreferences["message"+capitalizedStatusName+"Class"]);
-                    }   
                     fieldRenderPreferences.messageWrapperNode.appendChild($message);
                 } else {
                     this.$wrapper.appendChild($message);
@@ -674,11 +687,7 @@ export default class FormValidatorField {
                     this._logger.log("validate(): Field \"#"+this.name+"\" is not valid", this);
                     this.setInvalid(message, silentMode);
                     rejectValidationPromise();
-                    
-                    (events && events.onValidateField) && (events.onValidateField(this));
-                    this._validator.updateDependencyRules()
-                    this._validator.updateFormState()
-
+                         
                 });
 
             }
@@ -688,11 +697,13 @@ export default class FormValidatorField {
                 this.setValid(validMessage, silentMode);
                 resolveValidationPromise();
                 
-                (events && events.onValidateField) && (events.onValidateField(this));
-                this._validator.updateDependencyRules()
-                this._validator.updateFormState()
-
             }
+
+            this._validator.updateDependencyRules();
+            this._validator.updateFormState();
+            
+            (events && events.onValidateField) && (events.onValidateField(this));
+
 
             this.$wrapper.dispatchEvent(new CustomEvent('formValidatorFieldValidate', {detail: {formValidatorField: this}}))
             
