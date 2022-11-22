@@ -553,6 +553,8 @@ export default class FormValidatorField {
                 
                 if(fieldRenderPreferences.messageWrapperNode) {
                     fieldRenderPreferences.messageWrapperNode.appendChild($message);
+                } else if(fieldRenderPreferences.messageWrapperNodeId && document.getElementById(fieldRenderPreferences.messageWrapperNodeId)) {
+                    document.getElementById(fieldRenderPreferences.messageWrapperNodeId).appendChild($message);
                 } else {
                     this.$wrapper.appendChild($message);
                 }
