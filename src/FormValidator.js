@@ -694,8 +694,7 @@ export default class FormValidator {
         return true
     }
 
-    submit(e) {
-
+    submit(cb) {
 
         let _submit = () => {
 
@@ -713,10 +712,12 @@ export default class FormValidator {
                     this.submitting = false
                     this.hideLoading();
                     if(callback) {
+                        (cb && cb(true))
                         this.events.onSubmit && (this.events.onSubmit(this));
                     } else {
                         this.submitting = false
                         this._logger.log("submit(): Form can't be submitted", this); 
+                        (cb && cb(false))
                         this.events.onSubmitFail && (this.events.onSubmitFail(this));
                     }
                     this.enableForm();
@@ -728,8 +729,8 @@ export default class FormValidator {
                 this.submitting = false;
                 this.hideLoading();
                 this.$form.submit()
+                (cb && cb(true))
                 this.events.onSubmit && (this.events.onSubmit(this));
-                this.resetForm();
             }
         }
 
@@ -737,6 +738,7 @@ export default class FormValidator {
         this.events.onTrySubmit && (this.events.onTrySubmit(this));
         
         if(this.submitting === true || this.isValidating()) {
+            (cb && cb(false))
             return;
         } else {
             this.submitting = true
@@ -746,9 +748,11 @@ export default class FormValidator {
                     _submit()
                 } else {
                     this.submitting = false
+                    (cb && cb(false))
                 }
             }).catch(() => {
                 this.submitting = false;
+                (cb && cb(false))
             })
         
 
