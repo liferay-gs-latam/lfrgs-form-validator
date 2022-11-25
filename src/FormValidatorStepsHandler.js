@@ -38,11 +38,12 @@ class FormValidatorStepsHandler {
             if(step.formValidatorInstance && step.formValidatorInstance.$form) {
                 $stepForm.addEventListener("change", handleStepFormChange);
 
-                let _this = this;
-                step.formValidatorInstance.submitFn = ((validator, cb) => {
-                    _this.submit();
-                    cb(true)
-                })
+                if(!step.formValidatorInstance.submitFn) {
+                    step.formValidatorInstance.submitFn = ((validator, cb) => {
+                        cb(true)
+                    })
+                }
+                
             }
 
             let stepPreviousButtons = $stepForm.querySelectorAll('[data-steps-handler-previous]');
@@ -140,9 +141,11 @@ class FormValidatorStepsHandler {
             return;
         }
         let _this = this;
-        var lastStep = this.currentStepIndex;
+        var lastStepIndex = this.currentStepIndex;
+        this.disableStepChange();
         let _setStep = () => {
-            lastStep = this.currentStepIndex;
+            this.enableStepChange();
+            lastStepIndex = this.currentStepIndex;
             for(const step of this.steps) {
                 step.formValidatorInstance.$form.classList.remove(this.currentStepClass);
                 step.formValidatorInstance.$form.classList.add(this.hiddenStepClass);
@@ -152,6 +155,7 @@ class FormValidatorStepsHandler {
             this.steps[stepIndex].formValidatorInstance.$form.classList.add(this.currentStepClass);
 
             this.currentStepIndex = stepIndex;
+            this.steps[stepIndex].formValidatorInstance._hasSubmitted = false;
             this.update()
         
             if(focusStepFirstNotValidField) {
@@ -159,30 +163,44 @@ class FormValidatorStepsHandler {
             }
             
             if(this.onSetStep) {
-                return this.onSetStep(_this, lastStep)
+                return this.onSetStep(_this, lastStepIndex)
             }
             return
         }
 
-        this.steps[stepIndex].formValidatorInstance.$form.dispatchEvent(new CustomEvent('formValidatorShowStep', {detail: {currentStep: stepIndex}}))
+        this.steps[stepIndex].formValidatorInstance.$form.dispatchEvent(new CustomEvent('formValidatorShowStep', {detail: {currentStep: stepIndex}})) // TODO: maybe this should be inside _setStep
 
-        
-        if(this.enableStrictStepsOrder) {
+        if(this.enableStrictStepsOrder && this.currentStepIndex !== undefined && stepIndex > this.currentStepIndex) {
             
-            let validatorsPromises = [];
-            for(let i = stepIndex-1; i>=0; i--) {
-                if(this.steps[i]) {
-                    validatorsPromises.push(this.steps[i].formValidatorInstance._validate());
-                }
+            let stepsValidationPromises = [];
+            for(let i = 0; i < stepIndex; i++) {
+                // stepsValidationPromises.push(this.steps[i].formValidatorInstance._validate())
+                stepsValidationPromises.push(new Promise((resolve, reject) => {
+                    if(this.steps[i].formValidatorInstance._hasSubmitted) {
+                        resolve();
+                    } else {
+                        this.steps[i].formValidatorInstance.submit(submitted => {
+                            if(submitted) {
+                                this.steps[i].formValidatorInstance._hasSubmitted = true;
+                                resolve()
+                            } else {
+                                reject()
+                            }
+                        });
+                    }
+                   
+                }))
             }
 
-            Promise.all(validatorsPromises).then(() => {
+            Promise.all(stepsValidationPromises).then(() => {
                 _setStep()
+
             }).catch(() => {
-                this.steps[this.currentStepIndex].formValidatorInstance.submit()
-                if(focusStepFirstNotValidField) {
-                    this.focusStepFirstNotValidField(this.currentStepIndex)
-                }
+                // if(focusStepFirstNotValidField) {
+                //     this.focusStepFirstNotValidField(this.currentStepIndex)
+                // }
+                this.enableStepChange();
+
             })
 
             
@@ -190,19 +208,14 @@ class FormValidatorStepsHandler {
             _setStep()
         }
 
-        return;
-
     }
 
     next() {
-        this.steps[this.currentStepIndex].formValidatorInstance._validate().then(() => {
-            if(this.currentStepIndex < this.steps.length-1) {
-                this.setStep(this.currentStepIndex + 1);
-            }
-        }).catch(() => {
+        if(this.steps[this.currentStepIndex + 1]) {
+            this.setStep(this.currentStepIndex + 1);
+        } else {
             this.submit()
-        })
-
+        }
         return;
     }
 
@@ -234,14 +247,8 @@ class FormValidatorStepsHandler {
         })
     }
 
-    submit() {
 
-        (this.onTrySubmit) && this.onTrySubmit(this);
-
-        if(this.isSubmitting) {
-            return;
-        }
-        
+    getFirstInvalidStepIndex() {
         let firstInvalidStepIndex = -1;
         for(let i = 0; i < this.steps.length; i++) {
             let step = this.steps[i];
@@ -250,12 +257,23 @@ class FormValidatorStepsHandler {
                 break;
             }
         }
+        return firstInvalidStepIndex;
+    }
 
-        if(firstInvalidStepIndex !== -1) {
+    submit() {
+
+        (this.onTrySubmit) && this.onTrySubmit(this);
+
+        if(this.isSubmitting) {
+            return;
+        }
+        
+        let firstInvalidStepIndex = this.getFirstInvalidStepIndex();
+
+        if(firstInvalidStepIndex !== -1 && firstInvalidStepIndex !== this.currentStepIndex) {
             this.setStep(firstInvalidStepIndex);
-            this.steps[firstInvalidStepIndex].formValidatorInstance._validate().then(() => {
-                this.submit();
-            }).catch(() => {})
+            this.steps[firstInvalidStepIndex].formValidatorInstance._validate()
+
         } else {
             
             let _this = this;
@@ -272,9 +290,6 @@ class FormValidatorStepsHandler {
             this.isSubmitting = true;
 
             
-            // let forms = this.steps.map((step) => { 
-            //     return step.formValidatorInstance.$form
-            // });
 
             (this.submitFn) && this.submitFn(this, submitCallback);
 
