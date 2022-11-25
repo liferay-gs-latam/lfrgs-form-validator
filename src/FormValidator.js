@@ -314,12 +314,11 @@ export default class FormValidator {
                     fieldsValidationPromises.push(this.fields[fieldName]._validate(silentMode))
                 })
             }
-            let resolve = resolveValidationPromise;
-            let reject = rejectValidationPromise;
+            
             Promise.all(fieldsValidationPromises).then(() => {
-                resolve()
+                resolveValidationPromise()
             }).catch(() => {
-                reject()
+                rejectValidationPromise()
             }).finally(() => {
                 this.lastValidationSerializedFormData = this.getSerializedFormData()
                 this.events.onValidate && (this.events.onValidate(this));
