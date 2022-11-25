@@ -314,8 +314,8 @@ export default class FormValidator {
                     fieldsValidationPromises.push(this.fields[fieldName]._validate(silentMode))
                 })
             }
-            let resolve = resolveValidationPromise();
-            let reject = rejectValidationPromise();
+            let resolve = resolveValidationPromise;
+            let reject = rejectValidationPromise;
             Promise.all(fieldsValidationPromises).then(() => {
                 resolve()
             }).catch(() => {
