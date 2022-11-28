@@ -137,7 +137,7 @@ class FormValidatorStepsHandler {
 
     setStep(stepIndex, focusStepFirstNotValidField=true) {    
         
-        if(this.disabledStepChange || stepIndex < 0 || stepIndex >= this.steps.length || !this.steps[stepIndex]) {
+        if(stepIndex === this.currentStepIndex || this.disabledStepChange || stepIndex < 0 || stepIndex >= this.steps.length || !this.steps[stepIndex]) {
             return;
         }
         let _this = this;
