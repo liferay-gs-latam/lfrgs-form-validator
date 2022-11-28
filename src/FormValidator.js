@@ -737,8 +737,10 @@ export default class FormValidator {
         // Process
         this.events.onTrySubmit && (this.events.onTrySubmit(this));
         
+        var _cb = (typeof cb === "function") ? cb : () => {};
+
         if(this.submitting === true || this.isValidating()) {
-            (cb && cb(false))
+            (_cb && _cb(false))
             return;
         } else {
             this.submitting = true
@@ -748,11 +750,11 @@ export default class FormValidator {
                     _submit()
                 } else {
                     this.submitting = false
-                    (cb && cb(false))
+                    (_cb && _cb(false))
                 }
             }).catch(() => {
                 this.submitting = false;
-                (cb && cb(false))
+                (_cb && _cb(false))
             })
         
 
