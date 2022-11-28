@@ -9,6 +9,7 @@ class FormValidatorStepsHandler {
         this.onInit = options.onInit;
         this.enableStrictStepsOrder = options.enableStrictStepsOrder;
         this.submitFn = options.submitFn;
+        this.onBeforeSubmit = options.onBeforeSubmit;
         this.onTrySubmit = options.onTrySubmit;
         this.onSubmit = options.onSubmit
         this.onSubmitFail = options.onSubmitFail;
@@ -294,6 +295,7 @@ class FormValidatorStepsHandler {
             this.isSubmitting = true;
 
             
+            (this.onBeforeSubmit) && this.onBeforeSubmit(this);
 
             (this.submitFn) && this.submitFn(this, submitCallback);
 
