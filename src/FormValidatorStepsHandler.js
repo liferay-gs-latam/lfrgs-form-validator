@@ -249,18 +249,17 @@ class FormValidatorStepsHandler {
     }
 
 
-    getFirstInvalidStepIndex() {
-        let firstInvalidStepIndex = -1;
+    getInvalidStepIndexes() {
+        let invalidStepIndexes = [];
         for(let i = 0; i < this.steps.length; i++) {
             let step = this.steps[i];
             if(!step.formValidatorInstance.isValid()) {
-                firstInvalidStepIndex = i;
-                break;
+                invalidStepIndexes.push(i);
             }
         }
-        return firstInvalidStepIndex;
+        return invalidStepIndexes;
     }
-
+    
     submit() {
 
         (this.onTrySubmit) && this.onTrySubmit(this);
@@ -269,16 +268,20 @@ class FormValidatorStepsHandler {
             return;
         }
         
-        let firstInvalidStepIndex = this.getFirstInvalidStepIndex();
-
-        if(firstInvalidStepIndex !== -1) {
-            this.setStep(firstInvalidStepIndex);
-            this.steps[firstInvalidStepIndex].formValidatorInstance._validate().then(() => {
-
-            }).catch(() => {
-                
+        let invalidStepIndexes = this.getInvalidStepIndexes();
+    
+        let stepsValidationPromises = [];
+        if(invalidStepIndexes.length) {
+            invalidStepIndexes.forEach(invalidStepIndex => {
+                stepsValidationPromises.push(this.steps[invalidStepIndex].formValidatorInstance._validate())
             })
 
+            Promise.all(stepsValidationPromises).then(()=> {
+                this.submit()
+            }).catch(() => {
+                this.setStep(invalidStepIndexes[0]);
+            })
+            
         } else {
             
             let _this = this;
