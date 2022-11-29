@@ -287,7 +287,7 @@ class FormValidatorStepsHandler {
                 _this.isSubmitting = false;
                 this.steps.forEach(step => {
                     step.formValidatorInstance.enableForm();
-                })
+                });
 
                 if(result) {
                     _this.onSubmit(_this);
@@ -300,7 +300,7 @@ class FormValidatorStepsHandler {
             this.isSubmitting = true;
             this.steps.forEach(step => {
                 step.formValidatorInstance.disableForm();
-            })
+            });
             (this.onBeforeSubmit) && this.onBeforeSubmit(this);
 
             (this.submitFn) && this.submitFn(this, submitCallback);
