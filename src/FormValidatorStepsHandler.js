@@ -285,6 +285,10 @@ class FormValidatorStepsHandler {
             let submitCallback = (result) => {
 
                 _this.isSubmitting = false;
+                this.steps.forEach(step => {
+                    step.formValidatorInstance.enableForm();
+                })
+
                 if(result) {
                     _this.onSubmit(_this);
                     // _this.reset();
@@ -292,9 +296,11 @@ class FormValidatorStepsHandler {
                     _this.onSubmitFail(_this);
                 }
             }
-            this.isSubmitting = true;
 
-            
+            this.isSubmitting = true;
+            this.steps.forEach(step => {
+                step.formValidatorInstance.disableForm();
+            })
             (this.onBeforeSubmit) && this.onBeforeSubmit(this);
 
             (this.submitFn) && this.submitFn(this, submitCallback);
