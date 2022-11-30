@@ -146,7 +146,7 @@ export default class FormValidatorField {
             }
 
             let handleFieldInput = (e) => {
-
+                this._validator.hasChangedSinceLastSubmission = true;
                 this.status = undefined;
                 this._status = undefined;
 
@@ -165,7 +165,7 @@ export default class FormValidatorField {
                     }
                     validate()
                 }
-
+                
                 (events && events.onFieldInput) && (events.onFieldInput(this));
 
             }
@@ -188,7 +188,7 @@ export default class FormValidatorField {
 
             var timeoutChange;
             let handleFieldValidationOnChange = () => {
-                
+                this._validator.hasChangedSinceLastSubmission = true;
                 if((this.getOptionFromFieldOrRoot("validateFieldOnChange") || (isRadioOrCheckbox && this.getOptionFromFieldOrRoot("validateFieldOnBlur"))) && this.interactive) {
                     let validate = () => {
                         this._validate().then((message) => {
