@@ -83,8 +83,9 @@ export default class FormValidator {
         this.groupWrapperHiddenClass = this.options.groupWrapperHiddenClass;
         this.groupWrapperVisibleClass = this.options.groupWrapperVisibleClass;
         this.enableDataRestore = this.options.enableDataRestore;
-
+        
         this.submitting = false;
+        this.hasChangedSinceLastSubmission = true;
         this.fields = {};
         this._repeatables = {};
         this.defaultRules = DEFAULT_RULES;
@@ -105,6 +106,7 @@ export default class FormValidator {
                 if(this.enableDataRestore) {
                     this.updateFormState();
                 }
+                this.hasChangedSinceLastSubmission = true;
                 this.updateDependencyRules(true);
             }
         }
@@ -694,6 +696,20 @@ export default class FormValidator {
         return true
     }
 
+    _submit() {
+
+        return new Promise((resolve, reject) => {
+            this.submit((cb) => {
+                if(cb) {
+                    resolve()
+                } else {
+                    reject()
+                }
+            })
+        })
+
+    }
+
     submit(cb) {
 
         let _submit = () => {
@@ -701,6 +717,8 @@ export default class FormValidator {
             this.events.onBeforeSubmit && (this.events.onBeforeSubmit(this));
             
             this._logger.log("submit(): Submitting form", this); 
+            
+            this.$form.dispatchEvent(new CustomEvent('formValidatorSubmit', {detail: {formValidatorInstance: this}}))
 
             this.showLoading();
 
@@ -713,6 +731,7 @@ export default class FormValidator {
                     this.hideLoading();
                     if(callback) {
                         (cb && cb(true))
+                        this.hasChangedSinceLastSubmission = false;
                         this.events.onSubmit && (this.events.onSubmit(this));
                     } else {
                         this.submitting = false
@@ -730,6 +749,7 @@ export default class FormValidator {
                 this.hideLoading();
                 this.$form.submit()
                 (cb && cb(true))
+                this.hasChangedSinceLastSubmission = false;
                 this.events.onSubmit && (this.events.onSubmit(this));
             }
         }
