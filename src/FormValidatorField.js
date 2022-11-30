@@ -54,13 +54,12 @@ export default class FormValidatorField {
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
         this.formResetFn = fieldObject.formResetFn;
-        this._isDisabled = false;
-
+        this._disabled = false;
+        this.disabled = fieldObject.disabled;
         
         this.register();
         
     }
-
 
     getFieldRenderPreferences() {
         let fieldRenderPreferences = this._validator.fieldRenderPreferences;
@@ -125,6 +124,10 @@ export default class FormValidatorField {
                 $field.setAttribute("data-originally-readonly", "")
             }
 
+            if($field.hasAttribute("disabled")) {
+                this.disabled = true            
+            }
+            
             let isRadioOrCheckbox = false;
             if($field.getAttribute("type") === "radio" || $field.getAttribute("type") === "checkbox") {
                 isRadioOrCheckbox = true;
@@ -221,6 +224,10 @@ export default class FormValidatorField {
         if(this.mask) {
             this.setMask(this.mask)
         }
+        
+        if(this.disabled) {
+            this.disable();
+        }
 
         this.unregister = () => {
             this.setUnvalidated();
@@ -276,7 +283,6 @@ export default class FormValidatorField {
         if(this.setValueFn && typeof this.setValueFn === 'function') {
             this.setValueFn(this, value);
             this._validator.updateDependencyRules();
-
         } else {
 
             if(typeof value === "object") {
@@ -319,6 +325,10 @@ export default class FormValidatorField {
 
             this._validator.updateDependencyRules();
             
+        }
+
+        if(this.mask) {
+            this.setMask(this.mask)
         }
                 
     }
@@ -396,10 +406,7 @@ export default class FormValidatorField {
     }
 
     disable(unvalidate=true) {
-        if(this._isDisabled) { 
-            return;
-        }
-        this._isDisabled = true;
+        this._disabled = true;
         if(unvalidate) {
             this.setUnvalidated()
         }
@@ -413,7 +420,7 @@ export default class FormValidatorField {
     }
 
     enable(unvalidate=true) {
-        if(!this._isDisabled) { 
+        if(this.disabled) { 
             return;
         }
         this.enableInteraction()
@@ -423,15 +430,14 @@ export default class FormValidatorField {
         if(unvalidate) {
             this.setUnvalidated()
         }
-        this._isDisabled = false;
+        this._disabled = false;
         if(this.enableFn) {
             this.enableFn(this)
         }
     }
 
     // Enable/disable field interaction
-    disableInteraction() {
-
+    disableInteraction() {        
         var fieldRenderPreferences = this.getFieldRenderPreferences()
 
         if(fieldRenderPreferences.wrapperDisabledClass) {
@@ -452,7 +458,11 @@ export default class FormValidatorField {
     }
 
     enableInteraction() {
-        
+
+        if(this.disabled) {
+            return;
+        }
+
         var fieldRenderPreferences = this.getFieldRenderPreferences()
         
         if(fieldRenderPreferences.wrapperDisabledClass) {
