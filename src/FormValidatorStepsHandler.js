@@ -18,6 +18,8 @@ class FormValidatorStepsHandler {
         this.hiddenStepClass = options.hiddenStepClass || "d-none" // TODO: deixar configurável  
         // this.onBeforeSetStep = options.onSetStep
         this.onSetStep = options.onSetStep
+        this.forceStepsSubmission = (options.forceStepsSubmission !== undefined)? options.forceStepsSubmission : true;
+        this.hasSubmittedStepsSinceLastSubmission = true;
 
         return this.init()
     }
@@ -72,6 +74,12 @@ class FormValidatorStepsHandler {
                 })
             })
 
+
+            let handleStepSubmit = (e) => {
+                this.hasSubmittedStepsSinceLastSubmission = true;
+            }
+            $stepForm.addEventListener('formValidatorSubmit', handleStepSubmit)
+
         }
 
         this.start(); // TODO: if config says it auto starts
@@ -84,6 +92,19 @@ class FormValidatorStepsHandler {
         
     }
 
+    hasChangedSinceLastSubmission() {
+        
+        const allFalse = arr => arr.every(val => val === false);
+        let stepsChangeStatuses = [];
+
+        this.steps.forEach(step => {
+            stepsChangeStatuses.push(step.formValidatorInstance.hasChangedSinceLastSubmission)
+        })
+
+        return !(stepsChangeStatuses[0] === false && allFalse(stepsChangeStatuses));
+
+        return true;
+    }
 
     update() {
 
@@ -144,7 +165,10 @@ class FormValidatorStepsHandler {
         let _this = this;
         var lastStepIndex = this.currentStepIndex;
         this.disableStepChange();
+        
         let _setStep = () => {
+
+
             this.enableStepChange();
             lastStepIndex = this.currentStepIndex;
             for(const step of this.steps) {
@@ -156,52 +180,61 @@ class FormValidatorStepsHandler {
             this.steps[stepIndex].formValidatorInstance.$form.classList.add(this.currentStepClass);
 
             this.currentStepIndex = stepIndex;
-            this.steps[stepIndex].formValidatorInstance._hasSubmitted = false;
+
             this.update()
         
             if(focusStepFirstNotValidField) {
                 this.focusStepFirstNotValidField(this.currentStepIndex)
             }
-            
+
+            this.steps[stepIndex].formValidatorInstance.$form.dispatchEvent(new CustomEvent('formValidatorShowStep', {detail: {currentStep: stepIndex}})) 
+
             if(this.onSetStep) {
                 return this.onSetStep(_this, lastStepIndex)
             }
             return
         }
 
-        this.steps[stepIndex].formValidatorInstance.$form.dispatchEvent(new CustomEvent('formValidatorShowStep', {detail: {currentStep: stepIndex}})) // TODO: maybe this should be inside _setStep
-
-        if(this.enableStrictStepsOrder && this.currentStepIndex !== undefined && stepIndex > this.currentStepIndex) {
-            
-            let stepsValidationPromises = [];
+        if(this.currentStepIndex !== undefined && this.enableStrictStepsOrder) {
+        
+            let promises = [];
             for(let i = 0; i < stepIndex; i++) {
-                // stepsValidationPromises.push(this.steps[i].formValidatorInstance._validate())
-                stepsValidationPromises.push(new Promise((resolve, reject) => {
-                    if(this.steps[i].formValidatorInstance._hasSubmitted) {
-                        resolve();
-                    } else {
-                        this.steps[i].formValidatorInstance.submit(submitted => {
-                            if(submitted) {
-                                this.steps[i].formValidatorInstance._hasSubmitted = true;
-                                resolve()
-                            } else {
-                                reject()
-                            }
-                        });
+                if(this.forceStepsSubmission) {
+                    if(this.steps[i].formValidatorInstance.hasChangedSinceLastSubmission) {
+                        promises.push(this.steps[i].formValidatorInstance._submit())
                     }
-                   
-                }))
+                } else {
+                    promises.push(this.steps[i].formValidatorInstance._validate())
+                }
             }
 
-            Promise.all(stepsValidationPromises).then(() => {
-                _setStep()
+  
+
+            Promise.all(promises).then(() => {
+
+                if(stepIndex < this.currentStepIndex && this.steps[this.currentStepIndex].formValidatorInstance.hasChangedSinceLastSubmission) {
+
+                    this.steps[this.currentStepIndex].formValidatorInstance._validate().then(() => {
+                        if(this.steps[this.currentStepIndex].formValidatorInstance.hasChangedSinceLastSubmission) {
+                            this.steps[this.currentStepIndex].formValidatorInstance._submit().then(() => {}).catch(() => {}).finally(() => {
+                                _setStep()
+                            })
+                        } else {
+                            _setStep()
+
+                        }
+                   
+                    }).catch(() => {
+                        _setStep()
+                    })
+                    
+                } else {
+                    _setStep()
+                }
 
             }).catch(() => {
-                // if(focusStepFirstNotValidField) {
-                //     this.focusStepFirstNotValidField(this.currentStepIndex)
-                // }
                 this.enableStepChange();
-
+                this.focusStepFirstNotValidField(this.currentStepIndex)
             })
 
             
@@ -248,8 +281,7 @@ class FormValidatorStepsHandler {
         })
     }
 
-
-    getInvalidStepIndexes() {
+    getNotValidStepIndexes() {
         let invalidStepIndexes = [];
         for(let i = 0; i < this.steps.length; i++) {
             let step = this.steps[i];
@@ -267,27 +299,38 @@ class FormValidatorStepsHandler {
         if(this.isSubmitting) {
             return;
         }
-        
-        let invalidStepIndexes = this.getInvalidStepIndexes();
-    
-        let stepsValidationPromises = [];
-        if(invalidStepIndexes.length) {
-            invalidStepIndexes.forEach(invalidStepIndex => {
-                stepsValidationPromises.push(this.steps[invalidStepIndex].formValidatorInstance._validate())
-            })
 
-            Promise.all(stepsValidationPromises).then(()=> {
-                this.submit()
+        let notValidStepIndexes = this.getNotValidStepIndexes();
+
+        if(notValidStepIndexes.length) {
+            this.steps[notValidStepIndexes[0]].formValidatorInstance._validate().then(() => {
+                this.submit();
+                return false;
             }).catch(() => {
-                this.setStep(invalidStepIndexes[0]);
+                this.setStep(notValidStepIndexes[0])
+                this.focusStepFirstNotValidField(notValidStepIndexes[0]);
             })
-            
-        } else {
+        }
+
+
+        ///////
+
+        
+        let stepsSubmissionPromises = [];
+        this.steps.forEach(step => {
+            if(step.formValidatorInstance.hasChangedSinceLastSubmission && this.forceStepsSubmission) {
+                stepsSubmissionPromises.push(step.formValidatorInstance._submit())
+            }
+        })
+        
+        Promise.all(stepsSubmissionPromises).then(()=> {
             
             let _this = this;
             let submitCallback = (result) => {
 
                 _this.isSubmitting = false;
+                this.hasSubmittedStepsSinceLastSubmission = false;
+
                 this.steps.forEach(step => {
                     step.formValidatorInstance.enableForm();
                 });
@@ -308,11 +351,13 @@ class FormValidatorStepsHandler {
 
             (this.submitFn) && this.submitFn(this, submitCallback);
 
-        }
-        
-        
 
+        }).catch(() => {
+            // this.setStep(this.getNotValidStepIndexes()[0]);
+        })
+            
     }
+    
 
 
 }
