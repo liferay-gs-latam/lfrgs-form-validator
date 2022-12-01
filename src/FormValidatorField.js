@@ -288,9 +288,6 @@ export default class FormValidatorField {
 
             if(typeof value === "object") {
                 this.elements.forEach(($field, i) => {
-                    // if(!this.interactive) {
-                    //     return;
-                    // }
                     if($field.getAttribute("type") === "radio" || $field.getAttribute("type") === "checkbox") {
                         if(value.includes($field.value)) {
                             $field.checked = true
@@ -306,9 +303,6 @@ export default class FormValidatorField {
                 })
             } else {
                 this.elements.forEach(($field, i) => {
-                    // if(!this.interactive) {
-                    //     return;
-                    // }
                     if($field.getAttribute("type") === "radio" || $field.getAttribute("type") === "checkbox") {
                         if(value === $field.value) {
                             $field.checked = true
@@ -472,12 +466,12 @@ export default class FormValidatorField {
 
         var fieldRenderPreferences = this.getFieldRenderPreferences()
         
-        if(fieldRenderPreferences.wrapperDisabledClass) {
+        if(fieldRenderPreferences.wrapperDisabledClass && !this.disabled) {
             this.$wrapper.classList.remove(fieldRenderPreferences.wrapperDisabledClass);
         }
 
         this.elements.forEach($field => {            
-            if(fieldRenderPreferences.disabledClass) {
+            if(fieldRenderPreferences.disabledClass && !this.disabled) {
                 $field.classList.remove(fieldRenderPreferences.disabledClass);
             }
             
