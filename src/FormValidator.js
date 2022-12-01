@@ -511,6 +511,7 @@ export default class FormValidator {
 
         this.eachField((field) => {
 
+            let fieldValidationPromises = [];
             if(field.dependencyRules && field.dependencyRules.length) {
 
                 let handleValidationPromise = async (resolveValidationPromise, rejectValidationPromise) => {
@@ -646,13 +647,20 @@ export default class FormValidator {
                     
                 }
                 
-                let dependencyRulesValidationPromise = new Promise(handleValidationPromise);    
+                fieldValidationPromises.push(new Promise(handleValidationPromise)) 
 
             }
 
-            if(field.disabled) {
-                field.disable(false)
-            }
+            Promise.all(fieldValidationPromises).then(() => {
+                
+                if(field.disabled) {
+                    field.disable(false)
+                }
+
+            }).catch(() => {
+
+            })
+          
     
         });
 
