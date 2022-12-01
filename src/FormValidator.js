@@ -651,7 +651,7 @@ export default class FormValidator {
             }
 
             if(this.disabled) {
-                this.disable()
+                this.disable(false)
             }
     
     
