@@ -511,7 +511,7 @@ export default class FormValidator {
 
         this.eachField((field) => {
 
-            if(field.dependencyRules && !field.dependencyRules.length) {
+            if(field.dependencyRules && field.dependencyRules.length) {
 
                 let handleValidationPromise = async (resolveValidationPromise, rejectValidationPromise) => {
             
