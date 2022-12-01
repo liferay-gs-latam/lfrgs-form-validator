@@ -35,10 +35,10 @@ export default class FormValidatorField {
         this.group = fieldObject.group;
         this.elements = Array.from(fieldObject._validator.$form.querySelectorAll('[name="'+fieldObject.name+'"]'));
         
-        this.interactive = fieldObject.interactive;
+        this.interactive = (fieldObject.interactive !== undefined) ? fieldObject.interactive : true;
         this.mask = fieldObject.mask;
         this.dependencyRules = fieldObject.dependencyRules;
-        this.useRules = true;
+        this.useRules = (fieldObject.useRules !== undefined) ? fieldObject.useRules : true;
         
         this.rules = fieldObject.rules || [];
         this.events = fieldObject.events;
@@ -460,18 +460,18 @@ export default class FormValidatorField {
 
     enableInteraction() {
 
-        if(this.interactive) {
+        if(this.interactive || this.disabled) {
             return
         }
 
         var fieldRenderPreferences = this.getFieldRenderPreferences()
         
-        if(fieldRenderPreferences.wrapperDisabledClass && !this.disabled) {
+        if(fieldRenderPreferences.wrapperDisabledClass) {
             this.$wrapper.classList.remove(fieldRenderPreferences.wrapperDisabledClass);
         }
 
         this.elements.forEach($field => {            
-            if(fieldRenderPreferences.disabledClass && !this.disabled) {
+            if(fieldRenderPreferences.disabledClass) {
                 $field.classList.remove(fieldRenderPreferences.disabledClass);
             }
             
