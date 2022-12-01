@@ -644,15 +644,16 @@ export default class FormValidator {
 
                     resolveValidationPromise()
         
+                    if(field.disabled) {
+                        field.disable(false)
+                    }
+                    
                 }
                 
                 let dependencyRulesValidationPromise = new Promise(handleValidationPromise);
             
             }
 
-            if(this.disabled) {
-                this.disable(false)
-            }
     
     
         });
