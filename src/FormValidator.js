@@ -591,7 +591,9 @@ export default class FormValidator {
                                 }
 
                                 if(depRuleObject.behavior === "disable") {
-                                    targetField.disable()
+                                    if(!targetField.disabled) {
+                                        targetField.disable()
+                                    }
                                 }
                             
                                 targetField.disableRules()
@@ -621,7 +623,9 @@ export default class FormValidator {
                                 } 
                     
                                 if(depRuleObject.behavior === "disable") {
-                                    targetField.enable()
+                                    if(!targetField.disabled) {
+                                        targetField.enable()
+                                    }
                                 }
 
                                 targetField.enableRules()
