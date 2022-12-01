@@ -49,7 +49,7 @@ export default class FormValidatorField {
         this.validateFieldOnChange = fieldObject.validateFieldOnChange;
         
         this._disabled = false;
-        this.disabled = fieldObject.disabled;
+        this.disabled = (fieldObject.disabled !== undefined) ? fieldObject.disabled : false;
 
         this.getValueFn = fieldObject.getValueFn;
         this.setValueFn = fieldObject.setValueFn;
