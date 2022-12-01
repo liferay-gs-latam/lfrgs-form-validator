@@ -407,6 +407,9 @@ export default class FormValidatorField {
     }
 
     disable(unvalidate=true) {
+        if(this._disabled) {
+            return;
+        }
         this._disabled = true;
         if(unvalidate) {
             this.setUnvalidated()
@@ -421,7 +424,7 @@ export default class FormValidatorField {
     }
 
     enable(unvalidate=true) {
-        if(this.disabled) { 
+        if(this.disabled || !this._disabled) { 
             return;
         }
         this.enableInteraction()
@@ -439,6 +442,9 @@ export default class FormValidatorField {
 
     // Enable/disable field interaction
     disableInteraction() {        
+        if(!this.interactive) {
+            return
+        }
         var fieldRenderPreferences = this.getFieldRenderPreferences()
 
         if(fieldRenderPreferences.wrapperDisabledClass) {
@@ -460,8 +466,8 @@ export default class FormValidatorField {
 
     enableInteraction() {
 
-        if(this.disabled) {
-            return;
+        if(this.interactive) {
+            return
         }
 
         var fieldRenderPreferences = this.getFieldRenderPreferences()
