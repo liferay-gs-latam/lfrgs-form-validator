@@ -632,17 +632,11 @@ export default class FormValidator {
                         await runRuleTest(formValidatorRule, value).then(() => {
                             this.events.onBeforeShowDependentFields && (this.events.onBeforeShowDependentFields(rule.targetFields));
                             fulfill()
-                            if(this.disabled) {
-                                this.disable()
-                            }
                             this.events.onShowDependentFields && (this.events.onShowDependentFields(rule.targetFields));
                         
                         }).catch((message) => {
                             this.events.onBeforeHideDependentFields && (this.events.onBeforeHideDependentFields(rule.targetFields));
                             unfulfill()
-                            if(this.disabled) {
-                                this.disable()
-                            }
                             this.events.onHideDependentFields && (this.events.onHideDependentFields(rule.targetFields));
                         })
         
