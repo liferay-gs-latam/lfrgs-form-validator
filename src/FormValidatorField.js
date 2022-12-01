@@ -282,8 +282,10 @@ export default class FormValidatorField {
     setValue(value) {
 
         if(this.setValueFn && typeof this.setValueFn === 'function') {
+            console.log('calling setValueFn', this.name);
             this.setValueFn(this, value);
-            this._validator.updateDependencyRules();
+            console.log('updating dependency rules', this.name);
+            setTimeout(this._validator.updateDependencyRules, 1)
         } else {
 
             if(typeof value === "object") {
@@ -325,6 +327,9 @@ export default class FormValidatorField {
         if(this.mask) {
             this.setMask(this.mask)
         }
+
+        this._validator.hasChangedSinceLastSubmission = true;
+
                 
     }
     
