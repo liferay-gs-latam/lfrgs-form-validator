@@ -48,17 +48,18 @@ export default class FormValidatorField {
         this.validateFieldOnBlur = fieldObject.validateFieldOnBlur;
         this.validateFieldOnChange = fieldObject.validateFieldOnChange;
         
+        this._disabled = false;
+        this.disabled = fieldObject.disabled;
+
         this.getValueFn = fieldObject.getValueFn;
         this.setValueFn = fieldObject.setValueFn;
         this.focusFn = fieldObject.focusFn;
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
         this.formResetFn = fieldObject.formResetFn;
-        this._disabled = false;
-        this.disabled = fieldObject.disabled;
-        
+
         this.register();
-        
+
     }
 
     getFieldRenderPreferences() {
