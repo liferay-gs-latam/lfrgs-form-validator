@@ -227,7 +227,7 @@ export default class FormValidatorField {
         }
         
         if(this.disabled) {
-            this.disable();
+            this.disable(false);
         }
 
         this.unregister = () => {
