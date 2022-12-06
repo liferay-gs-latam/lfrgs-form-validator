@@ -380,6 +380,9 @@ export default class FormValidatorField {
     }
 
     setMask(pattern) {
+        if(!pattern) {
+            pattern = this.mask
+        }
         this.unsetMask()
         if(pattern === "money") {
             VMasker(this.elements).maskMoney({
