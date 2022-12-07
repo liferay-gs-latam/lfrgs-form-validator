@@ -467,6 +467,9 @@ export default class FormValidatorField {
 
         })
         this.interactive = false;
+        if(this.disableInteractionFn) {
+            this.disableInteractionFn(this)
+        }
     }
 
     enableInteraction() {
@@ -494,6 +497,9 @@ export default class FormValidatorField {
 
         })
         this.interactive = true;
+        if(this.enableInteractionFn) {
+            this.enableInteractionFn(this)
+        }
 
     }
 
