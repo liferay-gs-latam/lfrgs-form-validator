@@ -687,6 +687,18 @@ export default class FormValidator {
 
     getFormData() {
         return new FormData(this.$form);
+    
+    }
+
+
+    getFieldsValues() {
+        let obj = {};
+
+        this.eachField(field => {
+            obj[field.name] = field.getValue();
+        })
+        return obj;
+
     }
 
     getSerializedFormData() {
