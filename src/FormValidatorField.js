@@ -415,14 +415,24 @@ export default class FormValidatorField {
         if(this._disabled) {
             return;
         }
-        this._disabled = true;
+
+        var fieldRenderPreferences = this.getFieldRenderPreferences()
+
+        if(fieldRenderPreferences.wrapperDisabledClass) {
+            this.$wrapper.classList.add(fieldRenderPreferences.wrapperDisabledClass);
+        }
+
+        this.disableInteraction()
+        this.elements.forEach($field => {
+            if(fieldRenderPreferences.disabledClass) {
+                $field.classList.add(fieldRenderPreferences.disabledClass);
+            }
+            $field.setAttribute("disabled","disabled");
+        })
         if(unvalidate) {
             this.setUnvalidated()
         }
-        this.disableInteraction()
-        this.elements.forEach($field => {
-            $field.setAttribute("disabled","disabled");
-        })
+        this._disabled = true;
         if(this.disableFn) {
             this.disableFn(this)
         }
@@ -432,8 +442,18 @@ export default class FormValidatorField {
         if(this.disabled || !this._disabled) { 
             return;
         }
+
+        var fieldRenderPreferences = this.getFieldRenderPreferences()
+
+        if(fieldRenderPreferences.wrapperDisabledClass) {
+            this.$wrapper.classList.remove(fieldRenderPreferences.wrapperDisabledClass);
+        }
+
         this.enableInteraction()
         this.elements.forEach($field => {
+            if(fieldRenderPreferences.disabledClass) {
+                $field.classList.remove(fieldRenderPreferences.disabledClass);
+            }
             $field.removeAttribute("disabled");
         })
         if(unvalidate) {
