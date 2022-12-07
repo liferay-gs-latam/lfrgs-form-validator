@@ -285,7 +285,7 @@ export default class FormValidatorField {
             console.log('calling setValueFn', this.name);
             this.setValueFn(this, value);
             console.log('updating dependency rules', this.name);
-            setTimeout(this._validator.updateDependencyRules, 1)
+            this._validator.updateDependencyRules()
         } else {
 
             if(typeof value === "object") {
@@ -450,21 +450,11 @@ export default class FormValidatorField {
         if(!this.interactive) {
             return
         }
-        var fieldRenderPreferences = this.getFieldRenderPreferences()
-
-        if(fieldRenderPreferences.wrapperDisabledClass) {
-            this.$wrapper.classList.add(fieldRenderPreferences.wrapperDisabledClass);
-        }
 
         this.elements.forEach($field => {
-            if(fieldRenderPreferences.disabledClass) {
-                $field.classList.add(fieldRenderPreferences.disabledClass);
-            }
-            
             $field.setAttribute("readonly","readonly");
             $field.addEventListener("input", this.handlePreventingDefault)
             $field.addEventListener("click", this.handlePreventingDefault)
-
         })
         if(this.disableInteractionFn) {
             this.disableInteractionFn(this)
@@ -477,18 +467,9 @@ export default class FormValidatorField {
         if(this.interactive || this.disabled) {
             return
         }
-
-        var fieldRenderPreferences = this.getFieldRenderPreferences()
         
-        if(fieldRenderPreferences.wrapperDisabledClass) {
-            this.$wrapper.classList.remove(fieldRenderPreferences.wrapperDisabledClass);
-        }
-
         this.elements.forEach($field => {            
-            if(fieldRenderPreferences.disabledClass) {
-                $field.classList.remove(fieldRenderPreferences.disabledClass);
-            }
-            
+     
             if(!$field.hasAttribute("data-originally-readonly")) {
                 $field.removeAttribute("readonly");
             }
@@ -733,7 +714,6 @@ export default class FormValidatorField {
             this._validator.updateFormState();
             
             (events && events.onValidateField) && (events.onValidateField(this));
-
 
             this.$wrapper.dispatchEvent(new CustomEvent('formValidatorFieldValidate', {detail: {formValidatorField: this}}))
             
