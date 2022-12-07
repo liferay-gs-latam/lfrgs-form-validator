@@ -466,10 +466,10 @@ export default class FormValidatorField {
             $field.addEventListener("click", this.handlePreventingDefault)
 
         })
-        this.interactive = false;
         if(this.disableInteractionFn) {
             this.disableInteractionFn(this)
         }
+        this.interactive = false;
     }
 
     enableInteraction() {
@@ -496,11 +496,11 @@ export default class FormValidatorField {
             $field.removeEventListener("click", this.handlePreventingDefault)
 
         })
-        this.interactive = true;
         if(this.enableInteractionFn) {
             this.enableInteractionFn(this)
         }
-
+        this.interactive = true;
+        
     }
 
     focus() {
