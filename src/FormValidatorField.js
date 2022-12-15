@@ -572,7 +572,11 @@ export default class FormValidatorField {
             }
 
             if(fieldRenderPreferences["show"+capitalizedStatusName+"Message"] && message && message.length) {
-                this.message = message;
+                if(typeof message === "function") {
+                    this.message = message()
+                } else {
+                    this.message = message;
+                }
                 let messageHTML = fieldRenderPreferences[statusName+"MessageHTML"].replace("{{message}}", message);
                 let $message = parseHTML(messageHTML);
                 
