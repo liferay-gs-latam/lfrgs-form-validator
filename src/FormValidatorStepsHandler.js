@@ -281,6 +281,12 @@ class FormValidatorStepsHandler {
         })
     }
 
+    getStepsFieldsValues() {
+        return this.steps.map(step => {
+            return step.formValidatorInstance.getFieldsValues()
+        })
+    }
+
     getNotValidStepIndexes() {
         let invalidStepIndexes = [];
         for(let i = 0; i < this.steps.length; i++) {
@@ -336,6 +342,9 @@ class FormValidatorStepsHandler {
                 });
 
                 if(result) {
+                    if(_this.onBeforeSubmit) {
+                        _this.onBeforeSubmit(_this)
+                    }
                     _this.onSubmit(_this);
                     // _this.reset();
                 } else {
