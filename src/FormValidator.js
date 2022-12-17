@@ -590,11 +590,10 @@ export default class FormValidator {
                                     targetField.$wrapper.classList.remove(renderPrefs.wrapperVisibleClass);
                                 }
 
-                                if(depRuleObject.behavior === "disable") {
-                                    if(!targetField.disabled) {
-                                        targetField.disable()
-                                    }
+                                if(!targetField.disabled) {
+                                    targetField.disable()
                                 }
+
                             
                                 targetField.disableRules()
 
@@ -622,11 +621,10 @@ export default class FormValidator {
                                     targetField.$wrapper.classList.add(renderPrefs.wrapperVisibleClass)
                                 } 
                     
-                                if(depRuleObject.behavior === "disable") {
-                                    if(!targetField.disabled) {
-                                        targetField.enable()
-                                    }
+                                if(!targetField.disabled) {
+                                    targetField.enable()
                                 }
+
 
                                 targetField.enableRules()
 
