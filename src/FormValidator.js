@@ -575,10 +575,10 @@ export default class FormValidator {
                             depRuleObject.groups.forEach(groupName => {
                                 let $groupWrapper = this.getGroupWrapper(groupName);
                                 if($groupWrapper) {
-                                    if(depRuleObject.behavior === "hide") {
+//                                     if(depRuleObject.behavior === "hide") {
                                         $groupWrapper.classList.add(this.groupWrapperHiddenClass);
                                         $groupWrapper.classList.remove(this.groupWrapperVisibleClass);
-                                    }
+//                                     }
                                 }
                             })
                             
@@ -607,10 +607,10 @@ export default class FormValidator {
                             depRuleObject.groups.forEach(groupName => {
                                 let $groupWrapper = this.getGroupWrapper(groupName);
                                 if($groupWrapper) {
-                                    if(depRuleObject.behavior === "hide") {
+//                                     if(depRuleObject.behavior === "hide") {
                                         $groupWrapper.classList.remove(this.groupWrapperHiddenClass)
                                         $groupWrapper.classList.add(this.groupWrapperVisibleClass)
-                                    }
+//                                     }
                                 }
                             })
 
