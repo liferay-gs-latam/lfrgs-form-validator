@@ -586,7 +586,7 @@ export default class FormValidator {
                                 let renderPrefs = targetField.getFieldRenderPreferences();
                                     
                                 if(depRuleObject.behavior === "hide") {
-                                    targetField.hidden = true;
+                                    targetField._hidden = true;
                                     targetField.$wrapper.classList.add(renderPrefs.wrapperHiddenClass);
                                     targetField.$wrapper.classList.remove(renderPrefs.wrapperVisibleClass);
                                 }
@@ -619,7 +619,7 @@ export default class FormValidator {
                                 let renderPrefs = targetField.getFieldRenderPreferences();
 
                                 if(depRuleObject.behavior === "hide") {
-                                    targetField.hidden = false;
+                                    targetField._hidden = false;
                                     targetField.$wrapper.classList.remove(renderPrefs.wrapperHiddenClass)
                                     targetField.$wrapper.classList.add(renderPrefs.wrapperVisibleClass)
                                 } 
