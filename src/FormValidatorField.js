@@ -482,7 +482,7 @@ export default class FormValidatorField {
 
     enableInteraction() {
 
-        if(this.interactive || this.disabled) {
+        if(this.interactive || this.disabled || this._disabled) {
             return
         }
         
