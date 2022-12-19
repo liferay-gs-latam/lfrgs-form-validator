@@ -419,7 +419,7 @@ export default class FormValidatorField {
         if(fieldRenderPreferences.wrapperDisabledClass) {
             this.$wrapper.classList.add(fieldRenderPreferences.wrapperDisabledClass);
         }
-
+        this._disabled = true;
         this.disableInteraction()
         this.elements.forEach($field => {
             if(fieldRenderPreferences.disabledClass) {
@@ -430,7 +430,6 @@ export default class FormValidatorField {
         if(unvalidate) {
             this.setUnvalidated()
         }
-        this._disabled = true;
         if(this.disableFn) {
             this.disableFn(this)
         }
@@ -446,7 +445,8 @@ export default class FormValidatorField {
         if(fieldRenderPreferences.wrapperDisabledClass) {
             this.$wrapper.classList.remove(fieldRenderPreferences.wrapperDisabledClass);
         }
-
+        
+        this._disabled = false;
         this.enableInteraction()
         this.elements.forEach($field => {
             if(fieldRenderPreferences.disabledClass) {
@@ -457,7 +457,6 @@ export default class FormValidatorField {
         if(unvalidate) {
             this.setUnvalidated()
         }
-        this._disabled = false;
         if(this.enableFn) {
             this.enableFn(this)
         }
