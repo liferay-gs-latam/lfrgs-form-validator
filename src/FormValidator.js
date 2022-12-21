@@ -526,6 +526,8 @@ export default class FormValidator {
     updateDependencyRules(resetValueOnToggle=false) {
         
         var _update = () => {
+            console.log("updateDependencyRules(): Updating...");
+            
             this._logger.log("updateDependencyRules(): Updating...", this);   
 
             this.eachField((field) => {
