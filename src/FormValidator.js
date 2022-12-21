@@ -108,68 +108,6 @@ export default class FormValidator {
         this._repeatables = {};
         this.defaultRules = DEFAULT_RULES;
         
-        // Register Fields
-        this._logger.log("init(): Registering fields..."); 
-        this.options.fields.forEach(fieldObject => {
-            this.registerField(fieldObject);
-        }) 
-
-        // Form event handlers
-        let formNativeEventsHandlers = {
-            submit: (e) => {
-                e.preventDefault();
-                this.submit(e)
-            },
-            change: (e) => {
-                if(this.enableDataRestore) {
-                    this.updateFormState();
-                }
-                this.hasChangedSinceLastSubmission = true;
-                this.updateDependencyRules(true);
-            }
-        }
-
-        Object.keys(formNativeEventsHandlers).map(key => {
-            this.$form.addEventListener(key, formNativeEventsHandlers[key])
-        })
-
-
-        if(this.enableDataRestore) {
-            this.applyFormState();
-            this.updateFormState();
-            this.validate(function(cb) {
-                this.updateDependencyRules()
-            })
-        } else { 
-            this.resetForm();
-        }
-
-        delete this.options
-        delete this.formId
-        
-        this.initialized = true;
-
-        this._logger.log("init(): Validator has been initialized", this);
-
-        this.events.onInit && (this.events.onInit(this));
-
-
-
-        this.destroy = () => {
-            this._logger.log("destroy(): Destroying validator...");    
-            this.deleteFormState();
-            this.resetValidation();
-            this.eachField((field) => {
-                field.unregister()
-            })            
-
-            Object.keys(formNativeEventsHandlers).map(key => {
-                this.$form.removeEventListener(key, formNativeEventsHandlers[key])
-            })
-
-            this.initialized = false;
-        }
-        
         
         this.updateDependencyRules = debounce(() => {
             console.log("updateDependencyRules(): Updating...");
@@ -341,6 +279,72 @@ export default class FormValidator {
 
             
         }, 150)
+        
+        
+        // Register Fields
+        this._logger.log("init(): Registering fields..."); 
+        this.options.fields.forEach(fieldObject => {
+            this.registerField(fieldObject);
+        }) 
+
+        // Form event handlers
+        let formNativeEventsHandlers = {
+            submit: (e) => {
+                e.preventDefault();
+                this.submit(e)
+            },
+            change: (e) => {
+                if(this.enableDataRestore) {
+                    this.updateFormState();
+                }
+                this.hasChangedSinceLastSubmission = true;
+                this.updateDependencyRules(true);
+            }
+        }
+
+        Object.keys(formNativeEventsHandlers).map(key => {
+            this.$form.addEventListener(key, formNativeEventsHandlers[key])
+        })
+
+
+        if(this.enableDataRestore) {
+            this.applyFormState();
+            this.updateFormState();
+            this.validate(function(cb) {
+                this.updateDependencyRules()
+            })
+        } else { 
+            this.resetForm();
+        }
+
+        delete this.options
+        delete this.formId
+        
+        this.initialized = true;
+
+        this._logger.log("init(): Validator has been initialized", this);
+
+        this.events.onInit && (this.events.onInit(this));
+
+
+
+        this.destroy = () => {
+            this._logger.log("destroy(): Destroying validator...");    
+            this.deleteFormState();
+            this.resetValidation();
+            this.eachField((field) => {
+                field.unregister()
+            })            
+
+            Object.keys(formNativeEventsHandlers).map(key => {
+                this.$form.removeEventListener(key, formNativeEventsHandlers[key])
+            })
+
+            this.initialized = false;
+        }
+        
+        
+        
 
 
     }
