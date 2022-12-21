@@ -283,8 +283,11 @@ export default class FormValidatorField {
 
         if(this.setValueFn && typeof this.setValueFn === 'function') {
             this.setValueFn(this, value);
+            var _this = this;
+            setTimeout(function() {
+                _this._validator.updateDependencyRules();
+            }, 1)
             
-            this._validator.updateDependencyRules();
             
             
         } else {
