@@ -109,9 +109,7 @@ export default class FormValidator {
         this.defaultRules = DEFAULT_RULES;
         
         
-        this.updateDependencyRules = debounce(() => {
-            console.log("updateDependencyRules(): Updating...");
-            
+        this.updateDependencyRules = debounce(() => {            
             this._logger.log("updateDependencyRules(): Updating...", this);   
 
             this.eachField((field) => {
