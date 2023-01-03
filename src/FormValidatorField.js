@@ -4,7 +4,6 @@ import Logger from './Logger';
 import VMasker from 'vanilla-masker';
 import { deepSpread } from 'deep-spread';
 
-
 const parseHTML = (htmlString) => {
     const parser = new DOMParser();
     return parser.parseFromString(htmlString.trim(), 'text/html').body.firstChild;
@@ -57,6 +56,8 @@ export default class FormValidatorField {
         this.disableFn = fieldObject.disableFn;
         this.enableFn = fieldObject.enableFn;
         this.formResetFn = fieldObject.formResetFn;
+
+        this.helpText = fieldObject.helpText;
 
         this.register();
 
@@ -174,10 +175,8 @@ export default class FormValidatorField {
 
             }
 
-
-
             var timeoutBlur;
-            let handleFieldValidationOnBlur = () => {
+            let handleFieldBlur = () => {
                 if(this.getOptionFromFieldOrRoot("validateFieldOnBlur") && this.interactive) {
                     let validate = () => {
                         this._validate().then((message) => {
@@ -188,6 +187,7 @@ export default class FormValidatorField {
                     timeoutBlur = setTimeout(validate, 1)
                     validate()
                 }
+
             }
 
             var timeoutChange;
@@ -209,13 +209,19 @@ export default class FormValidatorField {
 
             }
 
+            let handleFieldFocus = () => {
+                (events && events.onFieldFocus) && (events.onFieldFocus(this));
+
+            }
+
             $field.addEventListener('input', handleFieldInput);        
             $field.addEventListener('change', handleFieldValidationOnChange);
-            $field.addEventListener('blur', handleFieldValidationOnBlur);
+            $field.addEventListener('blur', handleFieldBlur);
+            $field.addEventListener('focus', handleFieldFocus);
             unregisterFns.push(() => {
                 $field.removeEventListener('input', handleFieldInput);
                 $field.removeEventListener('change', handleFieldValidationOnChange);
-                $field.removeEventListener('blur', handleFieldValidationOnBlur);
+                $field.removeEventListener('blur', handleFieldBlur);
 
                 $field.removeAttribute(constants.INITIALIZED_FIELD_DATA_ATTRIBUTE);
             })
@@ -384,30 +390,40 @@ export default class FormValidatorField {
     }
 
     setMask(pattern) {
+        
         if(!pattern) {
             pattern = this.mask
         }
         if(!pattern) {
             return;
         }
+
+        let elements = this.elements.filter(element => {
+            return element && document.body.contains(element);
+        })
+
         this.unsetMask()
         if(pattern === "money") {
-            VMasker(this.elements).maskMoney({
+            VMasker(elements).maskMoney({
                 precision: 2,
                 separator: ',',
                 delimiter: '.',
                 zeroCents: false
             });
         } else {
-            VMasker(this.elements).maskPattern(pattern);
+            VMasker(elements).maskPattern(pattern);
         }
 
 
     }
 
     unsetMask() {
-        if(VMasker(this.elements)) {
-            VMasker(this.elements).unMask(); 
+
+        let elements = this.elements.filter(element => {
+            return element && document.body.contains(element);
+        })
+        if(elements.length && VMasker(elements)) {
+            VMasker(elements).unMask(); 
         }
     }
 
