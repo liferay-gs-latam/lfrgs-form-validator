@@ -52,7 +52,7 @@ class FormValidatorStepsHandler {
             let stepPreviousButtons = $stepForm.querySelectorAll('[data-steps-handler-previous]');
             let stepNextButtons = $stepForm.querySelectorAll('[data-steps-handler-next]');
             let submitButtons = $stepForm.querySelectorAll('[data-steps-handler-submit]');
-
+                
             stepPreviousButtons.forEach($previousButton => {
                 $previousButton.addEventListener('click', e => {
                     e.preventDefault();
@@ -86,7 +86,14 @@ class FormValidatorStepsHandler {
 
         this.update();
 
+        this.destroy = () => {
+            this.steps.forEach(step => {
+                step.formValidatorInstance.destroy();
+            })
+        }
+
         (this.onInit) && this.onInit(this);
+
 
         return this
         
