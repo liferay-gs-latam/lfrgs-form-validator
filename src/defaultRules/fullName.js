@@ -5,7 +5,6 @@ export default {
     async: false,
     fn: (value, parameter) => {
         let exp = /^(\w.+\s).+/;
-        console.log('fullnamerule', value);
         return exp.test(value)
     }
 }
